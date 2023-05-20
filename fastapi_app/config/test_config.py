@@ -1,0 +1,3 @@
+TEST_USER = "SECRET_USER"
+TEST_KEY = "SECRET_KEY"
+TEST_DB = "pgdatabase"

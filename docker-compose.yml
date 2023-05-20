@@ -1,36 +1,50 @@
 version: "3.9"
 services:
   ml:
-#    build: ./fastapi_app
-    image: mar1a/msk23:base
+    build: ./fastapi_app
+#    image: mar1a/msk23:base
 #    deploy:
 #      resources:
 #        limits:
 #          cpus: '0.80'
 #          memory: 12g
-    restart: unless-stopped
+    restart: on-failure
     ports:
       - "8000:8000"
     container_name: fastapi
     environment:
       PORT: 8000
+      HOST: "postgres_db"
     volumes:
-      - C:/logs/fastapi/:/logs/
+      - ./logs/fastapi/:/logs/
     networks:
-      - test
+      - mynetwork
+    depends_on:
+      postgres_db:
+        condition: service_healthy
 
   postgres_db:
     image: "postgres:12"
     restart: always
     ports:
-      - "5431:5432"
+      - "5432:5432"
     environment:
-      POSTGRES_DB: "msk23"
-      POSTGRES_USER: "root"
-      POSTGRES_PASSWORD: "root"
+      PORT: 5432
+      POSTGRES_DB: "pgdatabase"
+      POSTGRES_USER: "SECRET_USER"
+      POSTGRES_PASSWORD: "SECRET_KEY"
     container_name: postgres_db
+    volumes:
+      - ./init-scripts:/docker-entrypoint-initdb.d
+      - ./pgdata:/var/lib/postgresql/data
     networks:
-      - test
+      - mynetwork
+    healthcheck:
+        test: ["CMD", "pg_isready", "-q", "-d", "pgdatabase", "-U", "SECRET_USER"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
 
 networks:
-  test:
+  mynetwork:
+    driver: bridge

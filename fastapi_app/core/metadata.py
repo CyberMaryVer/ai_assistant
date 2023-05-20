@@ -38,6 +38,10 @@ TAGS_METADATA = [
         "description": "Operations with files. For developers. These endpoints are not available in production.",
     },
     {
+        "name": "tables",
+        "description": "Database queries. For developers. These endpoints are not available in production.",
+    },
+    {
         "name": "users",
         "description": "Operations with users. For developers. These endpoints are not available in production."
     },

@@ -11,7 +11,12 @@ nenv/
 # PyCharm
 .idea/
 
-
+# Secrets
 server-info
+
+# Logs
 logs/
-db_utils/
+
+# Database
+db_utils/!/db_data/
+pgdata/

@@ -15,7 +15,7 @@ from fastapi_app.core.config import get_app_settings
 from fastapi.openapi.utils import get_openapi
 from fastapi.staticfiles import StaticFiles
 
-# from app.core.events import create_start_app_handler
+from fastapi_app.core.events import create_start_app_handler, create_stop_app_handler
 
 
 def custom_openapi():
@@ -75,14 +75,14 @@ def get_application() -> FastAPI:
     )
 
     # WHEN DATABASE IS READY
-    # application.add_event_handler(
-    #     "startup",
-    #     create_start_app_handler(application, settings),
-    # )
-    # application.add_event_handler(
-    #     "shutdown",
-    #     create_stop_app_handler(application),
-    # )
+    application.add_event_handler(
+        "startup",
+        create_start_app_handler(application, settings),
+    )
+    application.add_event_handler(
+        "shutdown",
+        create_stop_app_handler(application),
+    )
 
     application.add_exception_handler(HTTPException, http_error_handler)
     application.add_exception_handler(RequestValidationError, http422_error_handler)

@@ -2,7 +2,7 @@ FROM python:3.9.16-slim-bullseye
 WORKDIR /app
 
 # For installing deps
-COPY ./../requirements.txt .
+COPY ./requirements.txt .
 
 # Update and install deps
 RUN apt-get update && \
