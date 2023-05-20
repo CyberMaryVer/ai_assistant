@@ -13,3 +13,5 @@ nenv/
 
 
 server-info
+#logs/
+#db_utils/
