@@ -1,0 +1,22 @@
+# GENERAL
+tqdm
+numpy
+plotly
+
+# FOR FASTAPI
+fastapi
+uvicorn
+python-multipart
+loguru
+jinja2
+
+# FOR PROMETHEUS
+prometheus_fastapi_instrumentator
+
+# OTHER
+# gif[plotly]
+# gif==3.0.0
+scipy
+pydantic
+json2table
+configparser
