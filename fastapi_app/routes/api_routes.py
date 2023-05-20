@@ -51,7 +51,7 @@ async def ask_chatbot(
               "api_key": api_key,
               }
     print("user request:", config)
-    result = get_answer_simple(question=user_input, api_key="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")
+    result = get_answer_simple(question=user_input, api_key="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")
     try:
         pass
     except Exception as e:
