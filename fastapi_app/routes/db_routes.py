@@ -6,7 +6,7 @@ from typing import Optional
 from loguru import logger
 
 from fastapi_app.utils.auth import get_current_active_user
-from fastapi_app.sql_tools.database import get_entries_from_collection, create_user
+# from fastapi_app.sql_tools.database import get_entries_from_collection, create_user
 
 router = APIRouter()
 
@@ -44,10 +44,10 @@ class UserInDB(BaseModel):
 
 @router.get("/db_users/")
 async def get_users():
-    user_entries = get_entries_from_collection("users")
+    # user_entries = get_entries_from_collection("users")
     logger.debug("endpoint /db_users/ called")
-    return {"users": user_entries}
-
+    # return {"users": user_entries}
+    return {"users": "not implemented"}
 
 @router.get("/edit_user/")
 async def edit_user(login: str = Query(..., example="user12345", description="User login"),
@@ -65,7 +65,7 @@ async def edit_user(login: str = Query(..., example="user12345", description="Us
     new_entry_dict = jsonable_encoder(new_entry_dict)
 
     if new_user:
-        status = create_user(new_entry_dict)
+        # status = create_user(new_entry_dict)
         logger.debug(f"New user created: {new_entry.login}")
     else:
         # await edit_user(new_entry_dict)

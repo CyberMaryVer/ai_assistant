@@ -3,12 +3,18 @@ tqdm
 numpy
 plotly
 
+# FOR OPENAI
+openai
+langchain
+tiktoken
+requests
+
 # FOR FASTAPI
 fastapi
 uvicorn
 python-multipart
 loguru
-jinja2
+# jinja2
 
 # FOR PROMETHEUS
 prometheus_fastapi_instrumentator
@@ -20,3 +26,4 @@ scipy
 pydantic
 json2table
 configparser
+email-validator

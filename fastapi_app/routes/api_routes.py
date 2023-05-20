@@ -6,6 +6,7 @@ from fastapi.responses import HTMLResponse
 
 from fastapi_app.utils.logger import setup_logging
 from fastapi_app.responses.api_responses import CHAT_RESPONSES
+from fastapi_app.chatbot.assistant import get_answer_simple
 
 router = APIRouter()
 logger = setup_logging()
@@ -26,12 +27,13 @@ class PrettyJSONResponse(Response):
 
 class QuestionParams(BaseModel):
     topic: bool = Query(False, description="Enable topic")
-    api_key: str = Query(..., description="API key", max_length=100)
+    sources: bool = Query(False, description="Enable sources")
 
 
-@router.post('/chatbot/{user_id}', include_in_schema=True, responses=CHAT_RESPONSES)
+@router.post('/chatbot/{user_id}{api_key}', include_in_schema=True, responses=CHAT_RESPONSES)
 async def ask_chatbot(
         user_id: str,
+        api_key: str,
         user_input: str = Body(..., example="How are you?", description="User text input", max_length=1500),
         question: QuestionParams = Body(...),
 ):
@@ -45,11 +47,11 @@ async def ask_chatbot(
     config = {"user_id": user_id,
               "user_input": user_input,
               "topic": question.topic,
-              "api_key": question.api_key,
+              "sources": question.sources,
+              "api_key": api_key,
               }
     print("user request:", config)
-    # result = get_result(config)
-    result = config
+    result = get_answer_simple(question=user_input, api_key="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")
     try:
         pass
     except Exception as e:

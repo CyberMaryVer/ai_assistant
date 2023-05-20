@@ -9,6 +9,7 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from fastapi_app.core.errors import http_error_handler
 from fastapi_app.core.errors import http422_error_handler
 from fastapi_app.core.examples import add_examples
+from fastapi_app.core.metadata import LOGO
 from fastapi_app.routes.api import router as api_router
 from fastapi_app.core.config import get_app_settings
 from fastapi.openapi.utils import get_openapi
@@ -31,9 +32,11 @@ def custom_openapi():
         tags=app.openapi_tags,
     )
     # setting new logo to docs
-    openapi_schema["info"]["x-logo"] = {
-        "url": "https://storage.googleapis.com/bubble-finder/$HR16UrfpfVQhqu2eRHDnaeTCRwSVICW1Uq0tVhSc3VbNEC7SeLSGm2"
-    }
+    # openapi_schema["info"]["x-logo"] = {
+    #     "url": LOGO,
+    # }
+
+    openapi_schema["info"]["x-logo"]['url'] = LOGO
 
     # app.openapi_schema = openapi_schema
     app.openapi_schema = add_examples(openapi_schema, './fastapi_app/examples')

@@ -1,0 +1,81 @@
+version: "3.9"
+services:
+  streamlit:
+#    build: ./streamlit_app
+    image: mar1a/mts:streamlit_beta
+    ports:
+      - "8503:8503"
+    container_name: streamlit
+    environment:
+      PORT: 8503
+      API_URL: http://ml:8000
+      PUBLIC_URL: http://localhost:8000
+    volumes:
+      - C:/videos/:/videos/
+      - C:/logs/streamlit/:/logs/
+#      - ${OS_TYPE == "win" ? "C:/logs:/logs" : "/home/user/logs:/logs"}
+    depends_on:
+      - fastapi
+    networks:
+      - test
+
+  ml:
+#    build: ./fastapi_app
+    image: mar1a/mts:beta
+    deploy:
+      resources:
+        limits:
+          cpus: '0.80'
+          memory: 12g
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    container_name: fastapi
+    environment:
+      PORT: 8000
+    volumes:
+      - C:/videos/:/videos/
+      - C:/logs/fastapi/:/logs/
+    networks:
+      - test
+
+  postgres_db:
+    image: "postgres:12"
+    restart: always
+    ports:
+      - "5431:5432"
+    environment:
+      POSTGRES_DB: "mts"
+      POSTGRES_USER: "root"
+      POSTGRES_PASSWORD: "root"
+    container_name: postgres_db
+    networks:
+      - test
+
+  api_service:
+    image: mar1a/mts:api_service
+#    build: ./film-adaptation/
+    restart: unless-stopped
+    ports:
+      - "8888:8888"
+    environment:
+      SPRING_DATASOURCE_URL_DB: r2dbc:postgresql://postgres_db:5432/mts
+      SPRING_DATASOURCE_USERNAME_DB: root
+      SPRING_DATASOURCE_PASSWORD_DB: root
+      PORT: 8888
+#      JVM_OPTS: -Xmx512m -Xms512m -XX:MaxPermSize=1024m
+#    user: root
+    container_name: api_service
+    volumes:
+#      - ${HOME}/upload:/opt/app/video_files
+      - C:/videos/:/opt/app/video_files
+
+    depends_on:
+      - postgres_db
+    networks:
+      - test
+    dns:
+      - 8.8.8.8  # Use Google DNS server
+
+networks:
+  test:
