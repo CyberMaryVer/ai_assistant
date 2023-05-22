@@ -7,6 +7,7 @@ from fastapi.responses import HTMLResponse
 from fastapi_app.utils.logger import setup_logging
 from fastapi_app.responses.api_responses import CHAT_RESPONSES
 from fastapi_app.chatbot.assistant import get_answer_simple
+from fastapi_app.chatbot.secret import OPEN_API_KEY  # TODO: remove this after testing
 
 router = APIRouter()
 logger = setup_logging()
@@ -43,7 +44,7 @@ async def ask_chatbot(
     For more details, check out the [API documentation](https://api.aiengineers.com/redoc#tag/chat/operation/chatbot)
 
     """
-
+    api_key = OPEN_API_KEY # TODO: remove this after testing
     config = {"user_id": user_id,
               "user_input": user_input,
               "topic": question.topic,
@@ -51,7 +52,7 @@ async def ask_chatbot(
               "api_key": api_key,
               }
     print("user request:", config)
-    result = get_answer_simple(question=user_input, api_key="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")
+    result = get_answer_simple(question=user_input, api_key=api_key)
     try:
         pass
     except Exception as e:

@@ -13,6 +13,7 @@ nenv/
 
 # Secrets
 server-info
+*secret.py
 
 # Logs
 logs/
@@ -20,3 +21,4 @@ logs/
 # Database
 db_utils/!/db_data/
 pgdata/
+!/fastapi_app/chatbot/secret.py
