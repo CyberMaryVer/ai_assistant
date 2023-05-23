@@ -5,7 +5,9 @@ from pydantic import BaseModel
 
 class CompanyBase(BaseModel):
     name: str
-    is_disabled: Optional[bool] = None
+    is_disabled: Optional[bool] = False
+    email: str | None
+    website: str | None
 
 
 class CompanyCreate(CompanyBase):
