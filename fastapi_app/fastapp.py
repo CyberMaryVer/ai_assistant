@@ -11,6 +11,7 @@ from fastapi_app.core.errors import http422_error_handler
 from fastapi_app.core.examples import add_examples
 from fastapi_app.core.metadata import LOGO
 from fastapi_app.routes.api import router as api_router
+from fastapi_app.routes.admin import router as admin_router
 from fastapi_app.core.config import get_app_settings
 from fastapi.openapi.utils import get_openapi
 from fastapi.staticfiles import StaticFiles
@@ -88,6 +89,7 @@ def get_application() -> FastAPI:
     application.add_exception_handler(RequestValidationError, http422_error_handler)
 
     application.include_router(api_router, prefix=settings.api_prefix)
+    application.include_router(admin_router, prefix=settings.admin_prefix)
     application.mount("/static", StaticFiles(directory="./fastapi_app/static"), name="static")
 
     # application.openapi = custom_openapi

@@ -50,6 +50,7 @@ class AppSettings(BaseAppSettings):
     ]
 
     api_prefix: str = "/api"
+    admin_prefix: str = "/admin"
 
     jwt_token_prefix: str = "Token"
 
