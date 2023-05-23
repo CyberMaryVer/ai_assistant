@@ -2,7 +2,7 @@ import asyncpg
 from fastapi import Depends, APIRouter, Request
 from loguru import logger
 
-from .schemas import Company
+from .schemas import Company, CompanyCreate
 from .servies import company_servise
 
 router = APIRouter()
@@ -24,3 +24,14 @@ async def get_companies(db: asyncpg.Pool = Depends(get_db),
 
     # return {"rwer": "wer"}
     return companies
+
+
+@router.post("/")
+async def create_company(obj_in: CompanyCreate,
+                        db: asyncpg.Pool = Depends(get_db),
+                        ) -> Company:
+    company = await company_servise.create(db, obj_in)
+
+    logger.debug(f"{company=}")
+
+    return company

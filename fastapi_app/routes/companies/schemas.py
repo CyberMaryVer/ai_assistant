@@ -13,6 +13,9 @@ class CompanyBase(BaseModel):
 class CompanyCreate(CompanyBase):
     pass
 
+    class Config:
+        orm_mode = True
+
 class CompanyUpdate(CompanyBase):
     pass
 
