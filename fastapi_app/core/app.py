@@ -11,9 +11,9 @@ from fastapi_app.core.base import BaseAppSettings
 from fastapi_app.core.metadata import DESCRIPTION, TAGS_METADATA
 from fastapi_app.config.test_config import TEST_USER, TEST_KEY, TEST_DB
 
-secret_user = TEST_USER or os.getenv("SECRET_USER")
-secret_key = TEST_KEY or os.getenv("SECRET_KEY")
-db_name = TEST_DB or os.getenv("DB_NAME")
+secret_user = os.getenv("SECRET_USER") or TEST_USER
+secret_key = os.getenv("SECRET_KEY") or TEST_KEY
+db_name = os.getenv("DB_NAME") or TEST_DB
 host = os.getenv("HOST") or "localhost"
 
 print(f"HOST {host.upper()}:\033[92m host was identified as [{host}]\033[0m")
