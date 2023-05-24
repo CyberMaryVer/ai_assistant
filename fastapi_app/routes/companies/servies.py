@@ -1,5 +1,4 @@
 from typing import Generic, TypeVar, Type
-from sqlalchemy.dialects import postgresql
 
 import asyncpg
 
@@ -9,11 +8,31 @@ from loguru import logger
 
 from fastapi_app.sql_tools import models
 from .schemas import CompanyUpdate, CompanyCreate, Company
+from ...sql_tools.models import engine
 
 
 class CompanyService:
     def __init__(self, model: models.Company):
         self.model = model
+
+    async def get(self, db: asyncpg.Pool, _id: int) -> list[models.Company]:
+        query = select(self.model).where(self.model.id == _id)
+        logger.debug(query)
+
+        compiled_query = query.compile(bind=engine, compile_kwargs={
+            "literal_binds": True})  # , dialect=postgresql.asyncpg.dialect())
+        logger.debug(compiled_query)
+        logger.debug(str(compiled_query))
+
+        async with db.acquire() as connection:
+            logger.debug(f"start connection")
+            result = await connection.fetchrow(str(compiled_query))
+            logger.debug(f"{result=}")
+
+        company = Company(**result)
+        logger.debug(f"{company}")
+
+        return company
 
     async def get_many(self, db: asyncpg.Pool) -> list[models.Company]:
         query = select(self.model)
@@ -30,38 +49,13 @@ class CompanyService:
         return companies
 
     async def create(self, db: asyncpg.Pool, company_data: CompanyCreate) -> models.Company:
-        # query = """
-        #     INSERT INTO companies (name, email, website, is_disabled)
-        #     VALUES ($1, $2, $3, $4)
-        # """
-        #
-        # values = [
-        #     'Company',
-        #     'company@example.com',
-        #     'www.example.com',
-        #     False
-        # ]
-
-        keys = company_data.dict().keys()
-        placeholders = [f"${i + 1}" for i in range(len(keys))]
-
-        query = f"""
-            INSERT INTO companies ({",".join(keys)})
-            VALUES ({', '.join(placeholders)})
-            RETURNING id, created_at, {",".join(keys)}
-        """
-
-        values = list(company_data.dict().values())
-
-        logger.debug(f"{query=}")
-        logger.debug(f"{values=}")
+        query = insert(self.model).values(**company_data.dict()).returning(self.model)
+        query = query.compile(bind=engine, compile_kwargs={"literal_binds": True})
+        logger.debug(str(query))
 
         async with db.acquire() as connection:
-            result = await connection.fetchrow(query, *values)
+            result = await connection.fetchrow(str(query))
             logger.debug(f"{result=}")
-
-            # company_id = await connection.fetchval("SELECT LASTVAL()")
-            # logger.debug(f"{company_id=}")
 
         company = Company(**result)
 

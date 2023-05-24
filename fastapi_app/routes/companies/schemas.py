@@ -3,6 +3,8 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from fastapi_app.routes.keys.schemas import Key
+
 
 class CompanyBase(BaseModel):
     name: str
@@ -13,12 +15,12 @@ class CompanyBase(BaseModel):
     description: str | None
 
 
-
 class CompanyCreate(CompanyBase):
     pass
 
     class Config:
         orm_mode = True
+
 
 class CompanyUpdate(CompanyBase):
     pass

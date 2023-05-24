@@ -35,3 +35,15 @@ async def create_company(obj_in: CompanyCreate,
     logger.debug(f"{company=}")
 
     return company
+
+
+@router.get("/{company_id}")
+async def get_company( company_id: int,
+                       db: asyncpg.Pool = Depends(get_db),
+                        ) -> Company:
+    logger.debug("endpoint /get_company/ called")
+    company = await company_servise.get(db, company_id)
+
+    logger.debug(f"{company=}")
+
+    return company
