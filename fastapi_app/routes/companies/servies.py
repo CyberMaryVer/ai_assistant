@@ -20,10 +20,12 @@ class CompanyService:
         logger.debug(query)
 
         async with db.acquire() as connection:
-            result = await connection.fetch(query)
+            logger.debug(f"start connection")
+            result = await connection.fetch(str(query))
             logger.debug(f"{result=}")
 
         companies = [Company(**r) for r in result]
+        logger.debug(f"{companies}")
 
         return companies
 
@@ -46,7 +48,7 @@ class CompanyService:
         query = f"""
             INSERT INTO companies ({",".join(keys)})
             VALUES ({', '.join(placeholders)})
-            RETURNING id, {",".join(keys)}
+            RETURNING id, created_at, {",".join(keys)}
         """
 
         values = list(company_data.dict().values())

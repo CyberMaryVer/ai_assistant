@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy import Column, Integer, String, Boolean, Text, TIMESTAMP
 
 from sqlalchemy.ext.declarative import declarative_base
 
@@ -12,6 +12,9 @@ class Company(Base):
     name = Column(String(100), unique=True, nullable=False)
     email = Column(String)
     website = Column(String)
+    telephone = Column(String)
+    description = Column(Text)
+    created_at = Column(TIMESTAMP)
     is_disabled = Column(Boolean, nullable=False, default=False)
 
     def __repr__(self):

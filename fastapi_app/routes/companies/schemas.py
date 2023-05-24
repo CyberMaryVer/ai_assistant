@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel
@@ -5,9 +6,12 @@ from pydantic import BaseModel
 
 class CompanyBase(BaseModel):
     name: str
-    is_disabled: Optional[bool] = False
+    is_disabled: bool | None = False
     email: str | None
     website: str | None
+    telephone: str | None
+    description: str | None
+
 
 
 class CompanyCreate(CompanyBase):
@@ -22,6 +26,7 @@ class CompanyUpdate(CompanyBase):
 
 class Company(CompanyBase):
     id: int
+    created_at: datetime
 
     class Config:
         orm_mode = True

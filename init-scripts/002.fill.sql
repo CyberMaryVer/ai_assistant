@@ -1,4 +1,4 @@
-INSERT INTO companies (company_name, email, telephone, website, description)
+INSERT INTO companies (name, email, telephone, website, description)
 VALUES
   ('Company 01', 'company01@example.com', '8-(495)-xxx-xxx-xxxx', 'www.company01.com', 'Description 1'),
   ('Company 02', 'company02@example.com', '8-(495)-xxx-xxx-xxxx', 'www.company02.com', 'Description 2'),
