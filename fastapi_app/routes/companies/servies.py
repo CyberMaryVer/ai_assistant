@@ -2,9 +2,7 @@ from typing import Generic, TypeVar, Type
 from sqlalchemy.dialects import postgresql
 
 import asyncpg
-from pydantic import BaseModel
 
-from fastapi import HTTPException, status
 from sqlalchemy import select, insert, text
 
 from loguru import logger
