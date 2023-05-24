@@ -18,7 +18,7 @@ class Company(Base):
     created_at = Column(TIMESTAMP)
     is_disabled = Column(Boolean, nullable=False, default=False)
 
-    keys = relationship('Keys', backref='customer')
+    keys = relationship('Keys', backref='customer', lazy="selectin")
 
     def __repr__(self):
         return f'{self.__class__.__name__} (id={self.id}, name={self.name})'

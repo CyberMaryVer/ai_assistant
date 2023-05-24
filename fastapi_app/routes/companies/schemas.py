@@ -29,6 +29,7 @@ class CompanyUpdate(CompanyBase):
 class Company(CompanyBase):
     id: int
     created_at: datetime
+    keys: list[Key] | None
 
     class Config:
         orm_mode = True

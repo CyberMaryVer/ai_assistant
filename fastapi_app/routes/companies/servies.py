@@ -1,13 +1,16 @@
 from typing import Generic, TypeVar, Type
 
 import asyncpg
+from fastapi import HTTPException
 
-from sqlalchemy import select, insert, text
+from sqlalchemy import select, insert, delete
 
 from loguru import logger
+from starlette import status
 
 from fastapi_app.sql_tools import models
 from .schemas import CompanyUpdate, CompanyCreate, Company
+from ..keys.schemas import Key
 from ...sql_tools.models import engine
 
 
@@ -28,6 +31,9 @@ class CompanyService:
             logger.debug(f"start connection")
             result = await connection.fetchrow(str(compiled_query))
             logger.debug(f"{result=}")
+
+        if not result:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"id {_id} not found")
 
         company = Company(**result)
         logger.debug(f"{company}")
@@ -60,6 +66,33 @@ class CompanyService:
         company = Company(**result)
 
         return company
+
+    async def get_kyes(self, db: asyncpg.Pool, _id: int) -> models.Keys:
+        query = select(models.Keys).where(models.Keys.company_id == _id)
+        query = query.compile(bind=engine, compile_kwargs={"literal_binds": True})
+        logger.debug(str(query))
+
+        async with db.acquire() as connection:
+            result = await connection.fetch(str(query))
+            logger.debug(f"{result=}")
+
+        if not result:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"id {_id} not found")
+
+        keys = [Key(**r) for r in result]
+
+        return keys
+
+    async def delete_company(self, db: asyncpg.Pool, _id: int):
+        query = delete(self.model).where(self.model.id == _id).returning()
+        query = query.compile(bind=engine, compile_kwargs={"literal_binds": True})
+        logger.debug(str(query))
+
+        async with db.acquire() as connection:
+            result = await connection.execute(str(query))
+            logger.debug(f"{result=}")
+
+        return result
 
 
 company_servise = CompanyService(models.Company)
