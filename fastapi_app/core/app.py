@@ -56,7 +56,7 @@ class AppSettings(BaseAppSettings):
 
     allowed_hosts: List[str] = ["*"]
 
-    logging_level: int = logging.INFO
+    logging_level: int = logging.DEBUG
     loggers: Tuple[str, str] = ("uvicorn.asgi", "uvicorn.access")
 
     class Config:
