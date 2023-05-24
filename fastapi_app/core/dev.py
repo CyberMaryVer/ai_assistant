@@ -4,8 +4,9 @@ from pydantic import Field
 
 
 class DevAppSettings(AppSettings):
-    database_url: str = Field(..., env='database_url')
-    secret_key: str = Field(..., env='secret_key')
+    # database_url: str = Field(..., env='database_url')
+    # secret_key: str = Field(..., env='secret_key')
+    secret_key: str = "12345678"
 
     debug: bool = True
 

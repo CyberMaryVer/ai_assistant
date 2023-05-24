@@ -8,3 +8,4 @@ router.include_router(file_routes.router, tags=["files"], prefix="/files")
 router.include_router(db_routes.router, tags=["tables"], prefix="/tables")
 router.include_router(user_routes.router, tags=["users"], prefix="/users")
 router.include_router(healthcheck.router, tags=["healthcheck"], prefix="/healthcheck")
+

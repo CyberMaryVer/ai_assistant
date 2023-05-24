@@ -51,7 +51,7 @@ async def get_users():
     return {"users": "not implemented"}
 
 
-@router.get("/edit_user/")
+@router.put("/edit_user/")
 async def edit_user(login: str = Query(..., example="user12345", description="User login"),
                     email: str = Query(..., example="user@yahoo.com", description="User email"),
                     username: str = Query(..., example="user", description="User username"),
