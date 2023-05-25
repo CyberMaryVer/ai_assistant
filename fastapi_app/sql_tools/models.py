@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
-engine = create_engine("postgresql+asyncpg://postgres:Password!@10.254.159.15/assistan")
+engine = create_engine("postgresql+asyncpg://")
 
 
 
@@ -64,3 +64,22 @@ class Filters(Base):
         return f'{self.__class__.__name__} (id={self.id}, name={self.word})'
 
 
+
+class Requests(Base):
+    __tablename__ = "requests"
+
+    id = Column(Integer, primary_key=True)
+    timestamp = Column(TIMESTAMP)
+    company_id = Column(Integer, ForeignKey('companies.id'), nullable=False)
+    user_id = Column(String)
+    chat_id = Column(String)
+
+    raw_text = Column(Text, nullable=False)
+
+    filter_id = Column(Integer, ForeignKey('filtering_rules.id'))
+    timestamp_filter = Column(TIMESTAMP)
+    parent_id = Column(Integer, ForeignKey('requests.id'))
+    status = Column(String, nullable=False)
+
+    def __repr__(self):
+        return f'{self.__class__.__name__} (id={self.id}, name={self.timestamp}, status={self.status})'
