@@ -1,5 +1,5 @@
 import asyncpg
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from loguru import logger
 
 from fastapi_app.core.app import AppSettings
@@ -23,3 +23,7 @@ async def close_db_connection(app: FastAPI) -> None:
     await app.state.pool.close()
 
     logger.info("Connection closed")
+
+
+async def get_db(request: Request) -> asyncpg.Pool:
+        return request.app.state.pool

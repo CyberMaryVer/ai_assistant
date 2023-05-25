@@ -5,15 +5,12 @@ from starlette import status
 
 from .schemas import Key, KeyCreate
 from .servies import key_servise as servise
+from ...core.db import get_db
 
 router = APIRouter()
 
 
-async def get_db(request: Request) -> asyncpg.Pool:
-    return request.app.state.pool
-
-
-@router.get("/")
+@router.get("")
 async def get_keys(db: asyncpg.Pool = Depends(get_db),
                    ) -> list[Key]:
     # user_entries = get_entries_from_collection("users")
@@ -26,7 +23,7 @@ async def get_keys(db: asyncpg.Pool = Depends(get_db),
     return companies
 
 
-@router.post("/")
+@router.post("")
 async def create_key(obj_in: KeyCreate,
                      db: asyncpg.Pool = Depends(get_db),
                      ) -> Key:

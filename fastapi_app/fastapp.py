@@ -12,6 +12,7 @@ from fastapi_app.core.examples import add_examples
 from fastapi_app.core.metadata import LOGO
 from fastapi_app.routes.api import router as api_router
 from fastapi_app.routes.admin import router as admin_router
+from fastapi_app.routes.user import router as user_router
 from fastapi_app.core.config import get_app_settings
 from fastapi.openapi.utils import get_openapi
 from fastapi.staticfiles import StaticFiles
@@ -90,6 +91,7 @@ def get_application() -> FastAPI:
 
     application.include_router(api_router, prefix=settings.api_prefix)
     application.include_router(admin_router, prefix=settings.admin_prefix)
+    application.include_router(user_router, prefix="/user_router")
     application.mount("/static", StaticFiles(directory="./fastapi_app/static"), name="static")
 
     # application.openapi = custom_openapi

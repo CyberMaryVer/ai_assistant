@@ -14,7 +14,7 @@ async def get_db(request: Request) -> asyncpg.Pool:
     return request.app.state.pool
 
 
-@router.get("/")
+@router.get("")
 async def get_companies(db: asyncpg.Pool = Depends(get_db),
                         ) -> list[Company]:
     # user_entries = get_entries_from_collection("users")
@@ -28,7 +28,7 @@ async def get_companies(db: asyncpg.Pool = Depends(get_db),
     return companies
 
 
-@router.post("/")
+@router.post("")
 async def create_company(obj_in: CompanyCreate,
                          db: asyncpg.Pool = Depends(get_db),
                          ) -> Company:

@@ -6,6 +6,9 @@ from sqlalchemy.orm import relationship
 Base = declarative_base()
 engine = create_engine("postgresql+asyncpg://postgres:Password!@10.254.159.15/assistan")
 
+
+
+
 class Company(Base):
     __tablename__ = "companies"
 
@@ -39,4 +42,25 @@ class Keys(Base):
     is_disabled = Column(Boolean, nullable=False, default=False)
 
     def __repr__(self):
-        return f'{self.__class__.__name__} (id={self.id}, name={self.name})'
+        return f'{self.__class__.__name__} (id={self.id}, name={self.key_id})'
+
+
+class Filters(Base):
+    __tablename__ = "filtering_rules"
+
+    id = Column(Integer, primary_key=True)
+    created_at = Column(TIMESTAMP)
+    company_id = Column(Integer, ForeignKey('companies.id'), nullable=False)
+    created_user_id = Column(String)
+
+    word = Column(String, nullable=False)
+    description = Column(Text)
+
+    is_archive = Column(Boolean, default=False)
+    archive_at = Column(TIMESTAMP)
+    archive_user_id = Column(String)
+
+    def __repr__(self):
+        return f'{self.__class__.__name__} (id={self.id}, name={self.word})'
+
+
