@@ -74,7 +74,6 @@ class FilterService:
         compiled_query = await self._compile(query)
 
         async with db.acquire() as connection:
-            logger.debug(f"start connection")
             result = await connection.fetch(compiled_query)
             logger.debug(f"{result=}")
 
