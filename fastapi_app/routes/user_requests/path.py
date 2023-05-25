@@ -4,7 +4,7 @@ from loguru import logger
 from starlette import status
 
 from ...core.db import get_db
-from .schemas import UserRequest, UserRequestCreate, UserRequestBase, UserRequestPerent
+from .schemas import UserRequest, UserRequestCreate, UserRequestBase, UserRequestDialog
 from .servies import user_requests_servise as servise
 from ..companies.schemas import Company
 from ...utils.auth import get_current_active_company
@@ -16,7 +16,7 @@ router = APIRouter()
 async def get_filters(company: Company = Depends(get_current_active_company),
                       user_id: str = Header(None),
                       db: asyncpg.Pool = Depends(get_db),
-                      ) -> list[UserRequestPerent]:
+                      ) -> list[UserRequest]:
     logger.info(f"[Filter] {user_id=} сделал запрос от Компании '{company.name}'")
     logger.debug(f"{db=}")
 
@@ -45,37 +45,43 @@ async def user_request(obj_in: UserRequestBase,
     logger.debug(f"{obj_save=}")
 
     obj = await servise.save(db, obj_save)
-
     logger.debug(f"{obj=}")
+
+    status = await servise.check_filter(db, obj)
+
 
     return obj
 
 
-@router.get("/{filter_id}")
-async def get_filter(filter_id: int,
-                     company: Company = Depends(get_current_active_company),
-                     user_id: str = Header(None),
-                     db: asyncpg.Pool = Depends(get_db),
-                     ) -> UserRequestPerent:
+@router.get("/{request_id}")
+async def get_request(request_id: int,
+                      company: Company = Depends(get_current_active_company),
+                      user_id: str = Header(None),
+                      db: asyncpg.Pool = Depends(get_db),
+                      ) -> UserRequest:
+    """Получить цепочку вопросов"""
+
     logger.info(f"[Filter] {user_id=} сделал запрос от Компании: '{company.name}'")
 
-    obj = await servise.get_by_company_clarify(db, filter_id, company.id)
+    obj = await servise.get_by_company(db, request_id, company.id)
 
     logger.debug(f"{obj=}")
 
     return obj
 
 
-@router.post("/{request_id}/clarify")
-async def clarify_request(request_id: int,
+@router.post("/{response_id}/clarify")
+async def clarify_request(response_id: int,
                           obj_in: UserRequestBase,
                           user_id: str = Header(None),
                           chat_id: str = Header(None),
                           company: Company = Depends(get_current_active_company),
                           db: asyncpg.Pool = Depends(get_db),
                           ) -> UserRequest:
+    """Добавить уточнения"""
+
     logger.info(f"[Request] {user_id=} сделал запрос от Компании: '{company.name}'")
-    parent = await servise.get_by_company(db, request_id, company.id)
+    parent = await servise.get_by_company(db, response_id, company.id)
 
     obj_save = UserRequestCreate(**obj_in.dict(),
                                  parent_id=parent.id,
@@ -90,33 +96,4 @@ async def clarify_request(request_id: int,
 
     logger.debug(f"{obj=}")
 
-    return obj
-
-
-@router.put("/{filter_id}")
-async def edit_filter(filter_id: int,
-                      odj_update: UserRequestCreate,
-                      company: Company = Depends(get_current_active_company),
-                      user_id: str = Header(None),
-                      db: asyncpg.Pool = Depends(get_db),
-                      ) -> UserRequest:
-    logger.info(f"[Filter] {user_id=} сделал запрос от Компании: '{company.name}'")
-
-    obj = await servise.edit_filter(db, filter_id, odj_update, company.id)
-
-    logger.debug(f"{obj=}")
-    return obj
-
-
-@router.delete("/{filter_id}")
-async def arhive_filter(filter_id: int,
-                        company: Company = Depends(get_current_active_company),
-                        user_id: str = Header(None),
-                        db: asyncpg.Pool = Depends(get_db),
-                        ) -> UserRequest:
-    logger.info(f"[Filter] {user_id=} сделал запрос от Компании: '{company.name}'")
-
-    obj = await servise.arhive_filter(db, filter_id, user_id, company.id)
-
-    logger.debug(f"{obj=}")
     return obj

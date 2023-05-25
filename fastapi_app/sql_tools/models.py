@@ -78,7 +78,7 @@ class Requests(Base):
 
     filter_id = Column(Integer, ForeignKey('filtering_rules.id'))
     timestamp_filter = Column(TIMESTAMP)
-    parent_id = Column(Integer, ForeignKey('requests.id'))
+    response_id = Column(Integer, ForeignKey('responses.id'))
     status = Column(String, nullable=False)
 
     def __repr__(self):

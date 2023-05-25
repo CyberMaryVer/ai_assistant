@@ -21,7 +21,7 @@ class UserRequestCreate(UserRequestBase):
     user_id: str | None
     chat_id: str | None
     status: str
-    parent_id: int | None = None
+    response_id: int | None = None
 
 
 class UserRequest(UserRequestCreate):
@@ -29,13 +29,16 @@ class UserRequest(UserRequestCreate):
     timestamp: datetime
     filter_id: int | None
     timestamp_filter: datetime | None
-    parent_id: int | None = None
 
     class Config:
         orm_mode = True
 
-UserRequestRef = ForwardRef("UserRequestPerent")
-class UserRequestPerent(UserRequest):
-    clarify: list[UserRequestRef]  | None = None
 
-UserRequestPerent.update_forward_refs()
+class UserRequestDialog(UserRequest):
+    response: list[dict] | None
+
+# UserRequestRef = ForwardRef("UserRequestPerent")
+# class UserRequestPerent(UserRequest):
+#     clarify: list[UserRequestRef]  | None = None
+#
+# UserRequestPerent.update_forward_refs()

@@ -1,18 +1,21 @@
-import requests
-from time import time
+from pymystem3 import Mystem
 
-REQUEST_00 = "http://localhost:8000/healthcheck"
-REQUEST_01 = "http://localhost:8000/file_upload"
+# Создание объекта анализатора
+mystem = Mystem()
 
+# Английское предложение для анализа
+sentence = "I see a big cat on the tree string"
+sentence = "Я вижу большую кошку на дереве."
 
-def test_request(r, verbose=False):
-    start = time()
-    resp = requests.get(r, )
-    duration = time() - start
-    print(resp.status_code, duration)
-    print(resp.text) if verbose else None
+# Разделение предложения на слова
+words = sentence.split()
 
+# Проверка наличия слов
+for word in words:
+    # Морфологический анализ слова
+    analysis = mystem.analyze(word)
+    print(analysis)
 
-if __name__ == '__main__':
-    test_request(REQUEST_00)
-    test_request(REQUEST_01)
+    # Проверка наличия слова
+    if 'analysis' in analysis[0]:
+        print(f"Найдено слово '{word}' в предложении.")

@@ -10,9 +10,10 @@ from loguru import logger
 from starlette import status
 
 from fastapi_app.sql_tools import models
-from .schemas import UserRequest, UserRequestCreate, UserRequestPerent
-from ..keys.schemas import Key
+from .schemas import UserRequest, UserRequestCreate, UserRequestDialog
+from ..content_filter.servies import filter_servise
 from ...sql_tools.models import engine
+from ...utils.filter_message import filter_message
 
 
 class UserRequestsService:
@@ -33,7 +34,7 @@ class UserRequestsService:
         async with db.acquire() as connection:
             result = await connection.fetch(compiled_query)
 
-        objs = [UserRequestPerent(**r) for r in result]
+        objs = [UserRequest(**r) for r in result]
 
         return objs
 
@@ -90,13 +91,11 @@ class UserRequestsService:
             logger.debug(f"else {clarifys=}")
             return new_clarifys
 
-
-
-    async def get_by_company_clarify(self, db: asyncpg.Pool, _id: int, company_id: int) -> UserRequestPerent:
+    async def get_by_company_clarify(self, db: asyncpg.Pool, _id: int, company_id: int) -> UserRequest:
         query = select(self.model).where(self.model.id == _id).where(self.model.company_id == company_id)
 
         perent = await self._fetchrow(db, query)
-        perent = UserRequestPerent(**perent.dict())
+        perent = UserRequest(**perent.dict())
 
         clarifys = await self.get_clarifys(db, perent.id)
         logger.warning(f"{clarifys=}")
@@ -174,6 +173,16 @@ class UserRequestsService:
         filter = await self._fetchrow(db, query)
 
         return filter
+
+    async def check_filter(self, db: asyncpg.Pool, obj_in: UserRequest) -> UserRequest:
+        logger.debug(f"[check_filter] {obj_in=}")
+        filters = await filter_servise.get_many_by_company(db, obj_in.company_id, active_only=True)
+
+        filter_rule = await filter_message(obj_in.raw_text, filters)
+        logger.debug(f"[check_filter] {filter_rule=}")
+
+        return True
+
 
 
 user_requests_servise = UserRequestsService(models.Requests)
