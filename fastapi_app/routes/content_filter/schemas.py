@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from fastapi_app.routes.keys.schemas import Key
 
@@ -19,6 +19,12 @@ class FilterCreate(FilterBase):
 
 class FilterInCreate(FilterBase):
     word: str
+
+    @validator('word')
+    def key_type_valid(cls, v):
+        if len(v.strip().split()) != 1 :
+            raise ValueError('Передайте только 1 слово.')
+        return v.strip()
 
 
 class FilterUpdate(FilterBase):
