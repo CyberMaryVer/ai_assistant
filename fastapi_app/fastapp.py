@@ -89,7 +89,7 @@ def get_application() -> FastAPI:
     application.add_exception_handler(HTTPException, http_error_handler)
     application.add_exception_handler(RequestValidationError, http422_error_handler)
 
-    application.include_router(api_router, prefix=settings.api_prefix)
+    # application.include_router(api_router, prefix=settings.api_prefix)
     application.include_router(admin_router, prefix=settings.admin_prefix)
     application.include_router(user_router, prefix="/user")
     application.mount("/static", StaticFiles(directory="./fastapi_app/static"), name="static")

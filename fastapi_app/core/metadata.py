@@ -33,20 +33,20 @@ TAGS_METADATA = [
             "url": "http://localhost:9000/redoc",
         },
     },
-    {
-        "name": "files",
-        "description": "Operations with files. For developers. These endpoints are not available in production.",
-    },
-    {
-        "name": "tables",
-        "description": "Database queries. For developers. These endpoints are not available in production.",
-    },
-    {
-        "name": "users",
-        "description": "Operations with users. For developers. These endpoints are not available in production."
-    },
-    {
-        "name": "healthcheck",
-        "description": "Healthcheck endpoint. Returns 200 if the service is up and running.",
-    },
+    # {
+    #     "name": "files",
+    #     "description": "Operations with files. For developers. These endpoints are not available in production.",
+    # },
+    # {
+    #     "name": "tables",
+    #     "description": "Database queries. For developers. These endpoints are not available in production.",
+    # },
+    # {
+    #     "name": "users",
+    #     "description": "Operations with users. For developers. These endpoints are not available in production."
+    # },
+    # {
+    #     "name": "healthcheck",
+    #     "description": "Healthcheck endpoint. Returns 200 if the service is up and running.",
+    # },
 ]

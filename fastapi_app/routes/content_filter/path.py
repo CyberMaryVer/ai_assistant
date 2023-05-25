@@ -52,7 +52,7 @@ async def get_filter(filter_id: int,
                      ) -> FilterOut:
     logger.info(f"[Filter] {user_id=} сделал запрос от Компании: '{company.name}'")
 
-    obj = await servise.get(db, filter_id)
+    obj = await servise.get_by_company(db, filter_id, company.id)
 
     logger.debug(f"{obj=}")
 
@@ -67,7 +67,8 @@ async def edit_filter(filter_id: int,
                       db: asyncpg.Pool = Depends(get_db),
                       ) -> FilterOut:
     logger.info(f"[Filter] {user_id=} сделал запрос от Компании: '{company.name}'")
-    obj = await servise.edit_filter(db, filter_id, odj_update)
+
+    obj = await servise.edit_filter(db, filter_id, odj_update, company.id)
 
     logger.debug(f"{obj=}")
     return obj
@@ -81,7 +82,7 @@ async def arhive_filter(filter_id: int,
                         ) -> FilterOut:
     logger.info(f"[Filter] {user_id=} сделал запрос от Компании: '{company.name}'")
 
-    obj = await servise.arhive_filter(db, filter_id)
+    obj = await servise.arhive_filter(db, filter_id, user_id, company.id)
 
     logger.debug(f"{obj=}")
     return obj

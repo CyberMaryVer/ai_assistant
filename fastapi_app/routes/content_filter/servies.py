@@ -1,9 +1,10 @@
+import datetime
 from typing import Generic, TypeVar, Type
 
 import asyncpg
 from fastapi import HTTPException
 
-from sqlalchemy import select, insert, delete
+from sqlalchemy import select, insert, delete, update
 
 from loguru import logger
 from starlette import status
@@ -26,27 +27,29 @@ class FilterService:
 
         return str(compiled_query)
 
-    async def get(self, db: asyncpg.Pool, _id: int) -> list[Filter]:
-        query = select(self.model).where(self.model.id == _id)
-        logger.debug(query)
-
-        compiled_query = query.compile(bind=engine, compile_kwargs={
-            "literal_binds": True})  # , dialect=postgresql.asyncpg.dialect())
-        logger.debug(compiled_query)
-        logger.debug(str(compiled_query))
+    async def _fetchrow(self, db, query):
+        compiled_query = await self._compile(query)
 
         async with db.acquire() as connection:
-            logger.debug(f"start connection")
-            result = await connection.fetchrow(str(compiled_query))
-            logger.debug(f"{result=}")
+            result = await connection.fetchrow(compiled_query)
 
         if not result:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"id {_id} not found")
+            raise HTTPException(status.HTTP_404_NOT_FOUND)
 
-        company = Filter(**result)
-        logger.debug(f"{company}")
+        obj = Filter(**result)
 
-        return company
+        return obj
+
+    async def get(self, db: asyncpg.Pool, _id: int) -> Filter:
+        query = select(self.model).where(self.model.id == _id)
+        filter = await self._fetchrow(db, query)
+        return filter
+
+    async def get_by_company(self, db: asyncpg.Pool, _id: int, company_id: int) -> Filter:
+        query = select(self.model).where(self.model.id == _id).where(self.model.company_id == company_id)
+
+        filter = await self._fetchrow(db, query)
+        return filter
 
     async def get_many(self, db: asyncpg.Pool) -> list[Filter]:
         query = select(self.model)
@@ -83,42 +86,32 @@ class FilterService:
     async def create(self, db: asyncpg.Pool, obj_in: FilterCreate) -> Filter:
         query = insert(self.model).values(**obj_in.dict()).returning(self.model)
 
-        compiled_query = await self._compile(query)
+        filter = await self._fetchrow(db, query)
 
-        async with db.acquire() as connection:
-            result = await connection.fetchrow(compiled_query)
-            logger.debug(f"{result=}")
+        return filter
 
-        company = Filter(**result)
+    async def arhive_filter(self, db: asyncpg.Pool, _id: int, user_id: str, company_id: int):
+        query = update(self.model).where(self.model.id == _id,
+                                         self.model.company_id == company_id,
+                                         self.model.is_archive == False
+                                         ).values(is_archive=True,
+                                                  archive_at=datetime.datetime.utcnow(),
+                                                  archive_user_id=user_id,
+                                                  ).returning(self.model)
 
-        return company
+        filter = await self._fetchrow(db, query)
 
-    async def get_kyes(self, db: asyncpg.Pool, _id: int) -> models.Keys:
-        query = select(models.Keys).where(models.Keys.company_id == _id)
-        query = query.compile(bind=engine, compile_kwargs={"literal_binds": True})
-        logger.debug(str(query))
+        return filter
 
-        async with db.acquire() as connection:
-            result = await connection.fetch(str(query))
-            logger.debug(f"{result=}")
+    async def edit_filter(self, db: asyncpg.Pool, _id: int, odj_update: FilterUpdate, company_id: int):
+        query = update(self.model).where(self.model.id == _id,
+                                         self.model.company_id == company_id,
+                                         self.model.is_archive == False
+                                         ).values(**odj_update.dict()).returning(self.model)
 
-        if not result:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, detail=f"id {_id} not found")
+        filter = await self._fetchrow(db, query)
 
-        keys = [Key(**r) for r in result]
-
-        return keys
-
-    async def delete_company(self, db: asyncpg.Pool, _id: int):
-        query = delete(self.model).where(self.model.id == _id).returning()
-        query = query.compile(bind=engine, compile_kwargs={"literal_binds": True})
-        logger.debug(str(query))
-
-        async with db.acquire() as connection:
-            result = await connection.execute(str(query))
-            logger.debug(f"{result=}")
-
-        return result
+        return filter
 
 
 filter_servise = FilterService(models.Filters)
