@@ -3,6 +3,8 @@ from pydantic import BaseModel
 from typing import List
 import asyncpg
 
+from fastapi_app.core.db import get_db
+
 router = APIRouter()
 
 
@@ -16,9 +18,6 @@ class User(BaseModel):
     created_at: str
 
 
-# Depend on the Request to access app state
-async def get_db(request: Request) -> asyncpg.Pool:
-    return request.app.state.pool
 
 
 @router.get("/users/", response_model=List[User])

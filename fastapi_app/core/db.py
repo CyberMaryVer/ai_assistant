@@ -1,6 +1,7 @@
 import asyncpg
 from fastapi import FastAPI, Request
 from loguru import logger
+from sqlalchemy.dialects import postgresql
 
 from fastapi_app.core.app import AppSettings
 
@@ -27,3 +28,13 @@ async def close_db_connection(app: FastAPI) -> None:
 
 async def get_db(request: Request) -> asyncpg.Pool:
         return request.app.state.pool
+
+
+async def _compile(query) -> str:
+    compiled_query = query.compile(dialect=postgresql.asyncpg.dialect(),
+                                   compile_kwargs={"literal_binds": True}
+                                   )
+
+    logger.debug(str(compiled_query))
+
+    return str(compiled_query)
