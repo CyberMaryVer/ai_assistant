@@ -28,7 +28,7 @@ class UserRequestCreate(UserRequestBase):
     user_id: Union[str, None]
     chat_id: Union[str, None]
     status: str
-    response_id: Union[int, None] = None
+    parent_resp_id: Union[int, None] = None
 
 
 class UserRequestUpdate(BaseModel):
@@ -45,13 +45,12 @@ class UserRequest(UserRequestCreate):
 
     class Config:
         orm_mode = True
-        exclude = {'id'}
 
 
 class UserRequestOut(BaseModel):
     raw_text: str
     id: int
-    user_id: str
+    user_id: Union[int, None]
     status: str
     timestamp: datetime
     filter_id: Union[int, None]
@@ -59,7 +58,6 @@ class UserRequestOut(BaseModel):
 
     class Config:
         orm_mode = True
-        exclude = {'id'}
 
 
 class UserRequestDialog(UserRequest):
