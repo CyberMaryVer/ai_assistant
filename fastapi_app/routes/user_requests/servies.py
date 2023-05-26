@@ -14,6 +14,8 @@ from fastapi_app.sql_tools import models
 from .schemas import UserRequest, UserRequestCreate, UserRequestUpdate, UserRequestDialog
 from ..content_filter.schemas import Filter
 from ..content_filter.servies import filter_servise
+from ..user_response.schemas import UserResponseCreate
+from ..user_response.servies import user_response_servise
 from ...sql_tools.models import engine
 from ...utils.filter_message import filter_message
 
@@ -211,17 +213,24 @@ class UserRequestsService:
 
 
 async def generate_response(db: asyncpg.Pool, obj: UserRequest):
-    logger.debug(f"Начали генерировать ответ на вопрос {obj.id}")
+    logger.info(f"Начали генерировать ответ на вопрос {obj.id}")
 
     await sleep(30)
-
     bot_answer = obj.raw_text[::-1]
-    logger.debug(f"Получили ответ на вопрос {obj.id}, {bot_answer=}")
+
+    logger.success(f"Получили ответ на вопрос {obj.id}, {bot_answer=}")
 
     if bot_answer:
-        obj_update = UserRequestUpdate(status="answered",
-                                       )
-        await user_requests_servise.update(db, obj.id, obj_update)
+        response = UserResponseCreate(raw_text=bot_answer,
+                                      request_id=obj.id,
+                                      status='successful'
+                                      )
+
+        await user_response_servise.save(db, response)
+
+        request_update = UserRequestUpdate(status="answered")
+
+        await user_requests_servise.update(db, obj.id, request_update)
 
 
 user_requests_servise = UserRequestsService(models.Requests)

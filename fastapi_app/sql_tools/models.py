@@ -7,8 +7,6 @@ Base = declarative_base()
 engine = create_engine("postgresql+asyncpg://")
 
 
-
-
 class Company(Base):
     __tablename__ = "companies"
 
@@ -64,7 +62,6 @@ class Filters(Base):
         return f'{self.__class__.__name__} (id={self.id}, name={self.word})'
 
 
-
 class Requests(Base):
     __tablename__ = "requests"
 
@@ -82,4 +79,31 @@ class Requests(Base):
     status = Column(String, nullable=False)
 
     def __repr__(self):
-        return f'{self.__class__.__name__} (id={self.id}, name={self.timestamp}, status={self.status})'
+        return f'{self.__class__.__name__} (id={self.id}, time={self.timestamp}, status={self.status})'
+
+
+class Responses(Base):
+    __tablename__ = "responses"
+
+    id = Column(Integer, primary_key=True)
+    timestamp = Column(TIMESTAMP)
+    request_id = Column(Integer, ForeignKey('requests.id'), nullable=False)
+    raw_text = Column(Text)
+    status = Column(String, nullable=False)
+
+    def __repr__(self):
+        return f'{self.__class__.__name__} (id={self.id}, time={self.timestamp}, status={self.status})'
+
+
+class Feedbacks(Base):
+    __tablename__ = "feedbacks"
+
+    id = Column(Integer, primary_key=True)
+    respons_id = Column(Integer, ForeignKey('requests.id'), nullable=False)
+    user_id = Column(String)
+    timestamp = Column(TIMESTAMP)
+    estimation = Column(Integer, nullable=False)
+    note = Column(Text)
+
+    def __repr__(self):
+        return f'{self.__class__.__name__} (id={self.id}, respons={self.respons_id}, estimation={self.estimation})'
