@@ -26,10 +26,14 @@ CHAT_RESPONSES = {
                         "https://www.irs.gov/ru/businesses/small-businesses-self-employed/operating-a-business",
                         "https://www.garant.ru/actual/nalog/ndfl/"
                     ],
-                    "topic": "business",
-                    "user_id": "test_user",
-                    "user_input": "Как рассчитывается НДФЛ?",
-                    "elapsed_time": 0.5
+                    "user_request": {
+                        "user_input": "Как рассчитывается НДФЛ?",
+                        "topic": "business",
+                        "user_id": "1",
+                        "user_key": "11111test"
+                    },
+                    "uses_left": 90,
+                    "elapsed_time": 15.030277252197266
                 }
             }
         }
@@ -58,9 +62,13 @@ CHAT_RESPONSES_SIMPLE = {
             "application/json": {
                 "example": {
                     "answer": "НДФЛ (Налог на доходы физических лиц) рассчитывается как 13% от дохода физического лица за налоговый период.",
-                    "user_id": "test_user",
-                    "user_input": "Как рассчитывается НДФЛ?",
-                    "elapsed_time": 0.5
+                    "user_request": {
+                        "user_id": "1",
+                        "user_input": "как начисляется ндфл сотруднику работающему из другой страны",
+                        "user_key": "11111test"
+                    },
+                    "key_status": 89,
+                    "elapsed_time": 11.23199200630188
                 }
             }
         }

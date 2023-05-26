@@ -1,16 +1,21 @@
 import json
+import os
 from typing import Any
 from pydantic import BaseModel
 from time import time
-from fastapi import Depends, Query, APIRouter, Body, Response
-from fastapi.responses import HTMLResponse
+from fastapi import Query, APIRouter, Body, Response
 
 from fastapi_app.utils.logger import setup_logging
 from fastapi_app.responses.api_responses import CHAT_RESPONSES, CHAT_RESPONSES_SIMPLE
 from fastapi_app.chatbot.assistant import get_answer_simple
 from fastapi_app.chatbot.custom_langchain import answer_with_openai
-from fastapi_app.chatbot.secret import OPENAI_API_KEY  # TODO: remove this after testing
+from fastapi_app.chatbot.update_sources import add_tk_sources
+from fastapi_app.chatbot.fake_keys.validate_key import use_key
 
+# from fastapi_app.chatbot.secret import OPENAI_API_KEY  # TODO: remove this after testing
+
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "OPENAI_API_KEY")
 router = APIRouter()
 logger = setup_logging()
 
@@ -29,35 +34,53 @@ class PrettyJSONResponse(Response):
 
 
 class QuestionParams(BaseModel):
-    api_key: str = Query(OPENAI_API_KEY, description="API key")
+    tada_key: str = Query(..., description="Tada key")
     topic: str = Query('business', example='tk', description="Choose topic: [business, tk, events]")
-    update_sources: bool = Query(False, description="Update sources")
+    enrich_sources: bool = Query(False, description="Add links to sources (tk only)")
 
 
 class QuestionParamsSimple(BaseModel):
-    api_key: str = Query(OPENAI_API_KEY, description="API key")
+    tada_key: str = Query(..., description="API key")
 
 
 class DebugParams(QuestionParams):
+    api_key: str = Query(OPENAI_API_KEY, description="API key")
     html: bool = Query(False, description="Generate html")
     verbose: bool = Query(False, description="Verbose")
     temperature: float = Query(0.01, description="Temperature")
     return_context: bool = Query(False, description="Return context")
 
 
+def _get_valid_key(key):
+    key_status = use_key(key)
+    if 'success' in key_status:
+        return OPENAI_API_KEY, key_status['uses_left']
+    else:
+        return None, key_status['error']
+
+
 def _second_chance(answer, sources, user_input, api_key):
     print("\033[095msecond chance:\033[0m", answer)
-    if "нет информации" in answer.lower() or "в данном контексте" in answer.lower():
+
+    is_answer_ok = ["нет информации" in answer.lower(),
+                    "в данном контексте" in answer.lower(),
+                    "данной информации в контексте не приведено" in answer.lower(),
+                    "невозможно дать точный ответ" in answer.lower(),
+                    "невозможно дать ответ" in answer.lower(),
+                    "контекст не содержит информации" in answer.lower()]
+
+    if any(is_answer_ok):
         try:
-            prompt = f"Назови один-два сайта с информацией о том, "
-            answer = get_answer_simple(question=user_input, prompt=prompt, api_key=api_key)
-            answer = "В данной тематике нет такой информации. Могу порекомендовать поискать тут:\n" \
-                     + answer["answer"]
-            sources = ["https://www.google.com/",]
-            return answer, sources
+            prompt = f"Назови пару источников, где можно найти информацию о том, "
+            second_answer = get_answer_simple(question=user_input, prompt=prompt, api_key=api_key)
+            second_answer = answer + " Могу порекомендовать поискать тут:\n" + second_answer["answer"]
+            sources = sources + ["https://www.google.com/", ]
+            return second_answer, sources
+
         except Exception as e:
             print(f"[{__name__}] Error decoding: {e}")
             return answer, sources
+
     else:
         return answer, sources
 
@@ -65,57 +88,75 @@ def _second_chance(answer, sources, user_input, api_key):
 @router.post('/chatbot_simple/{user_id}', include_in_schema=True, responses=CHAT_RESPONSES_SIMPLE)
 async def ask_chatbot(
         user_id: str,
-        user_input: str = Body(..., example="How are you?", description="User text input", max_length=1500),
-        question: QuestionParamsSimple = Body(...),
+        user_input: str = Body('как начисляется ндфл сотруднику работающему из другой страны',
+                               example="How are you?",
+                               description="User text input",
+                               max_length=500),
+        params: QuestionParamsSimple = Body(...),
 ):
     """
     API endpoint for AI assistant (simple version)
     """
+    api_key, uses_left = _get_valid_key(params.tada_key)
+    if api_key is None:
+        return PrettyJSONResponse(content={"error": "Your key is invalid or expired",
+                                           "key_status": uses_left})
+
     config = {"user_id": user_id,
               "user_input": user_input,
-              "api_key": question.api_key,
+              "user_key": params.tada_key,
               }
     print("user request:", config)
 
     start_time = time()
-    result = get_answer_simple(question=user_input, api_key=question.api_key)
+    result = get_answer_simple(question=user_input, api_key=api_key)
     elapsed_time = time() - start_time
 
     try:
-        result.update({"user_id": user_id, "user_input": user_input, "elapsed_time": elapsed_time})
+        result.update({"user_request": config, "key_status": uses_left, "elapsed_time": elapsed_time})
     except Exception as e:
         print(f"Error decoding: {e}")
 
+    logger.info(f"response: {result}")
     return PrettyJSONResponse(content=result)
 
 
 @router.post('/chatbot_topic/{user_id}', include_in_schema=True, responses=CHAT_RESPONSES)
 async def ask_assistant(
         user_id: str,
-        user_input: str = Body(..., example="How are you?", description="User text input", max_length=1500),
+        user_input: str = Body('как начисляется ндфл сотруднику работающему из другой страны',
+                               example="How are you?",
+                               description="User text input",
+                               max_length=1500),
         params: QuestionParams = Body(...),
 ):
     """
     API endpoint for AI assistant (advanced version)
     """
-
+    api_key, uses_left = _get_valid_key(params.tada_key)
+    if api_key is None:
+        return PrettyJSONResponse(content={"error": "Your key is invalid or expired",
+                                           "key_status": uses_left})
     config = {
-        "user_id": user_id,
         "user_input": user_input,
-        "api_key": params.api_key,
         "topic": params.topic,
-        "generate_html": False,
-        "verbose": False
+        "user_id": user_id,
+        "user_key": params.tada_key,
+        # "generate_html": False,
+        # "verbose": False
     }
     print("user request:", config)
 
     start_time = time()
-    answer, sources = answer_with_openai(question=user_input, api_key=params.api_key)
-    answer, sources = _second_chance(answer, sources, user_input, params.api_key)
+    answer, sources = answer_with_openai(question=user_input, api_key=api_key, faiss_index=params.topic)
+    answer, sources = _second_chance(answer, sources, user_input, api_key)
     elapsed_time = time() - start_time
 
-    response_content = {"answer": answer, "sources": sources,
-                        "user_id": user_id, "user_input": user_input,
+    if params.enrich_sources and params.topic == 'tk':
+        sources = add_tk_sources(sources)
+
+    response_content = {"answer": answer, "sources": sources, "user_request": config, "uses_left": uses_left,
                         "elapsed_time": elapsed_time}
 
+    logger.info(f"response: {response_content}")
     return PrettyJSONResponse(content=response_content)
