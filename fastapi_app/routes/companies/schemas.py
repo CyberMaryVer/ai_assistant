@@ -29,7 +29,7 @@ class CompanyUpdate(CompanyBase):
 class Company(CompanyBase):
     id: int
     created_at: datetime
-    keys: Union[list[Key], None]
+    # keys: Union[list[Key], None]
 
     class Config:
         orm_mode = True

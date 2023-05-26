@@ -50,7 +50,7 @@ class UserRequest(UserRequestCreate):
 class UserRequestOut(BaseModel):
     raw_text: str
     id: int
-    user_id: Union[int, None]
+    user_id: Union[str, None]
     status: str
     timestamp: datetime
     filter_id: Union[int, None]
