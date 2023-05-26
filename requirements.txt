@@ -34,3 +34,6 @@ pydantic
 json2table
 configparser
 email-validator
+
+#FILTER
+pymystem3

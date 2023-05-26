@@ -1,4 +1,5 @@
 import datetime
+from asyncio import sleep
 from typing import Generic, TypeVar, Type
 
 import asyncpg
@@ -10,7 +11,8 @@ from loguru import logger
 from starlette import status
 
 from fastapi_app.sql_tools import models
-from .schemas import UserRequest, UserRequestCreate, UserRequestDialog
+from .schemas import UserRequest, UserRequestCreate, UserRequestUpdate, UserRequestDialog
+from ..content_filter.schemas import Filter
 from ..content_filter.servies import filter_servise
 from ...sql_tools.models import engine
 from ...utils.filter_message import filter_message
@@ -129,10 +131,8 @@ class UserRequestsService:
 
         async with db.acquire() as connection:
             result = await connection.fetch(compiled_query)
-            logger.debug(f"{result=}")
 
         companies = [UserRequest(**r) for r in result]
-        logger.debug(f"{companies}")
 
         return companies
 
@@ -174,15 +174,54 @@ class UserRequestsService:
 
         return filter
 
-    async def check_filter(self, db: asyncpg.Pool, obj_in: UserRequest) -> UserRequest:
+    async def check_filter(self, db: asyncpg.Pool, obj_in: UserRequest) -> Filter:
         logger.debug(f"[check_filter] {obj_in=}")
         filters = await filter_servise.get_many_by_company(db, obj_in.company_id, active_only=True)
 
         filter_rule = await filter_message(obj_in.raw_text, filters)
         logger.debug(f"[check_filter] {filter_rule=}")
 
-        return True
+        return filter_rule
 
+    async def update(self, db: asyncpg.Pool, _id: int, odj_update: UserRequestUpdate) -> UserRequest:
+        logger.debug(f"[update request] {odj_update=}")
+        query = update(self.model).where(self.model.id == _id,
+                                         ).values(**odj_update.dict(exclude_defaults=True)).returning(self.model)
+
+        user_requests = await self._fetchrow(db, query)
+
+        return user_requests
+
+    async def request_processing(self, db: asyncpg.Pool, obj: UserRequest) -> UserRequest:
+        filter = await self.check_filter(db, obj)
+        logger.info(f"[Request] {filter=}")
+
+        obj_update = UserRequestUpdate(filter_id=filter.id if filter else None,
+                                       timestamp_filter=datetime.datetime.utcnow(),
+                                       status="filtered_rejected" if filter else "accepted",
+                                       )
+
+        obj = await self.update(db, obj.id, obj_update)
+
+        if filter:
+            raise HTTPException(status_code=403,
+                                detail=f"Запрос id={obj.id} был заблокирован фильтром id={filter.id}, описание фильтра: {filter.description}")
+
+        return obj
+
+
+async def generate_response(db: asyncpg.Pool, obj: UserRequest):
+    logger.debug(f"Начали генерировать ответ на вопрос {obj.id}")
+
+    await sleep(30)
+
+    bot_answer = obj.raw_text[::-1]
+    logger.debug(f"Получили ответ на вопрос {obj.id}, {bot_answer=}")
+
+    if bot_answer:
+        obj_update = UserRequestUpdate(status="answered",
+                                       )
+        await user_requests_servise.update(db, obj.id, obj_update)
 
 
 user_requests_servise = UserRequestsService(models.Requests)

@@ -53,15 +53,11 @@ class FilterService:
 
     async def get_many(self, db: asyncpg.Pool) -> list[Filter]:
         query = select(self.model)
-        logger.debug(query)
 
         async with db.acquire() as connection:
-            logger.debug(f"start connection")
             result = await connection.fetch(str(query))
-            logger.debug(f"{result=}")
 
         companies = [Filter(**r) for r in result]
-        logger.debug(f"{companies}")
 
         return companies
 
@@ -75,10 +71,8 @@ class FilterService:
 
         async with db.acquire() as connection:
             result = await connection.fetch(compiled_query)
-            logger.debug(f"{result=}")
 
         companies = [Filter(**r) for r in result]
-        logger.debug(f"{companies}")
 
         return companies
 
