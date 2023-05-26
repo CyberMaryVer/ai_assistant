@@ -1,13 +1,15 @@
 import json
 from typing import Any
 from pydantic import BaseModel
+from time import time
 from fastapi import Depends, Query, APIRouter, Body, Response
 from fastapi.responses import HTMLResponse
 
 from fastapi_app.utils.logger import setup_logging
-from fastapi_app.responses.api_responses import CHAT_RESPONSES
+from fastapi_app.responses.api_responses import CHAT_RESPONSES, CHAT_RESPONSES_SIMPLE
 from fastapi_app.chatbot.assistant import get_answer_simple
-from fastapi_app.chatbot.secret import OPEN_API_KEY  # TODO: remove this after testing
+from fastapi_app.chatbot.custom_langchain import answer_with_openai
+from fastapi_app.chatbot.secret import OPENAI_API_KEY  # TODO: remove this after testing
 
 router = APIRouter()
 logger = setup_logging()
@@ -27,32 +29,50 @@ class PrettyJSONResponse(Response):
 
 
 class QuestionParams(BaseModel):
-    topic: bool = Query(False, description="Enable topic")
-    sources: bool = Query(False, description="Enable sources")
+    api_key: str = Query(OPENAI_API_KEY, description="API key")
+    topic: str = Query('business', example='tk', description="Choose topic: [business, tk, events]")
+    update_sources: bool = Query(False, description="Update sources")
 
 
-@router.post('/chatbot/{user_id}{api_key}', include_in_schema=True, responses=CHAT_RESPONSES)
+class DebugParams(QuestionParams):
+    html: bool = Query(False, description="Generate html")
+    verbose: bool = Query(False, description="Verbose")
+    temperature: float = Query(0.01, description="Temperature")
+
+
+def _second_chance(answer, sources, user_input, api_key):
+    print("\033[095msecond chance:\033[0m", answer)
+    if "нет информации" in answer.lower() or "в данном контексте" in answer.lower():
+        try:
+            prompt = f"Назови один-два сайта с информацией о том, "
+            answer = get_answer_simple(question=user_input, prompt=prompt, api_key=api_key)
+            answer = "В данной тематике нет такой информации. Могу порекомендовать поискать тут:\n" \
+                     + answer["answer"]
+            sources = ["https://www.google.com/",]
+            return answer, sources
+        except Exception as e:
+            print(f"[{__name__}] Error decoding: {e}")
+            return answer, sources
+    else:
+        return answer, sources
+
+
+@router.post('/chatbot_simple/{user_id}', include_in_schema=True, responses=CHAT_RESPONSES_SIMPLE)
 async def ask_chatbot(
         user_id: str,
-        api_key: str,
         user_input: str = Body(..., example="How are you?", description="User text input", max_length=1500),
         question: QuestionParams = Body(...),
 ):
     """
-    AI assistant API endpoint
-
-    For more details, check out the [API documentation](https://api.aiengineers.com/redoc#tag/chat/operation/chatbot)
-
+    API endpoint for AI assistant (simple version)
     """
-    api_key = OPEN_API_KEY # TODO: remove this after testing
     config = {"user_id": user_id,
               "user_input": user_input,
               "topic": question.topic,
-              "sources": question.sources,
-              "api_key": api_key,
+              "api_key": question.api_key,
               }
     print("user request:", config)
-    result = get_answer_simple(question=user_input, api_key=api_key)
+    result = get_answer_simple(question=user_input, api_key=question.api_key)
     try:
         pass
     except Exception as e:
@@ -61,14 +81,33 @@ async def ask_chatbot(
     return PrettyJSONResponse(content=result)
 
 
-@router.get("/", include_in_schema=False)
-async def root():
-    body = """<html>
-           <body style='padding: 10px;'>
-           <h1>FastAPI pipeline</h1>
-           <div>
-           </div>
-           </body>
-           </html>"""
+@router.post('/chatbot_topic/{user_id}', include_in_schema=True, responses=CHAT_RESPONSES)
+async def main_endpoint(
+        user_id: str,
+        user_input: str = Body(..., example="How are you?", description="User text input", max_length=1500),
+        params: QuestionParams = Body(...),
+):
+    """
+    API endpoint for AI assistant (advanced version)
+    """
 
-    return HTMLResponse(content=body)
+    config = {
+        "user_id": user_id,
+        "user_input": user_input,
+        "api_key": params.api_key,
+        "topic": params.topic,
+        "generate_html": False,
+        "verbose": False
+    }
+    print("user request:", config)
+
+    start_time = time()
+    answer, sources = answer_with_openai(question=user_input, api_key=params.api_key)
+    answer, sources = _second_chance(answer, sources, user_input, params.api_key)
+    elapsed_time = time() - start_time
+
+    response_content = {"answer": answer, "sources": sources,
+                        "user_id": user_id, "user_input": user_input,
+                        "elapsed_time": elapsed_time}
+
+    return PrettyJSONResponse(content=response_content)

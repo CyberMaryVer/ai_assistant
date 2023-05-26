@@ -8,7 +8,7 @@ from pydantic import PostgresDsn, SecretStr
 
 from fastapi_app.core.logging import InterceptHandler
 from fastapi_app.core.base import BaseAppSettings
-from fastapi_app.core.metadata import DESCRIPTION, TAGS_METADATA
+from fastapi_app.core.metadata import DESCRIPTION, TAGS_METADATA, CONTACT, LICENSE, SERVERS
 from fastapi_app.config.test_config import TEST_USER, TEST_KEY, TEST_DB
 
 secret_user = os.getenv("SECRET_USER") or TEST_USER
@@ -34,20 +34,10 @@ class AppSettings(BaseAppSettings):
     min_connection_count: int = 10
     secret_key: SecretStr = secret_key
 
-    contact = {
-        "name": "AI ENGINEERS",
-        "url": "https://gitlab.com/maria.startseva",
-        "email": "mary-ver@yandex.ru",
-    }
-    license_info = {
-        "name": "Apache 2.0",
-        "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
-    }
+    contact = CONTACT
+    license_info = LICENSE
     openapi_tags = TAGS_METADATA
-    servers = [
-        {"url": "localhost:8000"},
-        {"url": "localhost:9000", "description": "Staging environment"},
-    ]
+    servers = SERVERS
 
     api_prefix: str = "/api"
     admin_prefix: str = "/admin"

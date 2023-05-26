@@ -68,7 +68,7 @@ def get_answer_simple(question, prompt=None, api_key=OPENAI_API_KEY):
         )
         summary = completion['choices'][0]['message']['content'].strip()
 
-        print("\n" + summary)
+        print(f"\n\33[90mAnswer: {summary}\33[0m")
         return {"answer": summary}
 
     except InvalidRequestError as e:
@@ -90,8 +90,18 @@ def _split_text(text, chunk_size=512, verbose=True):
     return docs
 
 
+def _fix_answer(text):
+    text = text.replace("AI language model", "AI assistant")
+    text = text.replace("AI model", "AI assistant")
+    text = text.replace("AI system", "AI assistant")
+    return text
+
+
 if __name__ == "__main__":
-    with open("test.txt", "r", encoding="utf-8") as f:
+    from fastapi_app.chatbot.secret import OPEN_API_KEY
+    from fastapi_app.chatbot.translation import translate_ruen, translate_enru
+
+    with open("task.txt", "r", encoding="utf-8") as f:
         data = f.read()
 
     # count_tokens(data, prompt=PROMPT_SUMMARY)
@@ -99,6 +109,9 @@ if __name__ == "__main__":
     # document = Document(page_content=data)
     # get_summary(docs, is_large=True)
 
-    document = "How can I effectively manage financial reporting for publicly traded companies and comply with SEC regulations?"
-    task = "You have a great expertise in SEC regulations. Please provide a concise answer to the question below."
-    get_answer_simple(question=document, prompt=task)
+    document = "Основные нормы законодательства Москвы про ведение бизнеса."
+    d_en = translate_ruen(document)
+    task = "system: You are a Russian business expert. Please provide a concise answer to the question below."
+    answer = get_answer_simple(question=d_en, prompt=task, api_key=OPEN_API_KEY)
+    d_ru = translate_enru(answer["answer"])
+    print(d_ru)
