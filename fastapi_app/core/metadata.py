@@ -1,7 +1,7 @@
-LOGO = "https://is5-ssl.mzstatic.com/image/thumb/Purple126/v4/83/25/7a/83257a4b-9d54-8af8-8e31-5c79e612dbd9/AppIcon-0-1x_U007emarketing-0-10-0-85-220.png/512x512bb.jpg"
+LOGO = "https://static.vecteezy.com/system/resources/thumbnails/005/381/497/small/cute-robot-illustration-with-happy-expression-free-vector.jpg"
 
 LOGO_HTML = f"""
-<img src="{LOGO}" width="240" height="240">
+<img src="{LOGO}" width="210" height="240">
 """
 
 DESCRIPTION = f"""
@@ -63,7 +63,7 @@ TAGS_METADATA = [
 ]
 CONTACT = {
     "name": "AI ENGINEERS",
-    "url": "https://gitlab.com/maria.startseva",
+    "url": "http://localhost:8000",
     "email": "mary-ver@yandex.ru",
 }
 LICENSE = {
