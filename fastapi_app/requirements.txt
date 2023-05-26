@@ -8,6 +8,7 @@ openai
 langchain
 tiktoken
 requests
+faiss-cpu
 
 # FOR FASTAPI
 fastapi
@@ -15,6 +16,7 @@ uvicorn
 python-multipart
 loguru
 asyncpg
+python-dotenv
 # jinja2
 
 # FOR PROMETHEUS

@@ -28,5 +28,5 @@ Result:
 CONCISE SUMMARY:"""
 
 PROMPT_REGULAR = """
-You are a business analyst. Please provide a concise answer to the question below.
+system: You are a Russian business expert. Please provide a concise answer to the question below.
 """

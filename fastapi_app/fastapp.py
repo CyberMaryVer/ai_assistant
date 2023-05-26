@@ -1,5 +1,5 @@
-# COMMAND TO RUN:
-# uvicorn fastapi_app.fastapp:app --reload
+# COMMAND TO RUN FOR DEBUGGING:
+# uvicorn fastapi_app.fastapp:app --reload --port 9000 --env-file config.env
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException
@@ -11,12 +11,14 @@ from fastapi_app.core.errors import http422_error_handler
 from fastapi_app.core.examples import add_examples
 from fastapi_app.core.metadata import LOGO
 from fastapi_app.routes.api import router as api_router
+from fastapi_app.routes.index_routes import router as index_router
 from fastapi_app.routes.admin import router as admin_router
 from fastapi_app.core.config import get_app_settings
 from fastapi.openapi.utils import get_openapi
 from fastapi.staticfiles import StaticFiles
 
 from fastapi_app.core.events import create_start_app_handler, create_stop_app_handler
+from fastapi_app.config.app_config import DEBUG
 
 
 def custom_openapi():
@@ -33,10 +35,6 @@ def custom_openapi():
         tags=app.openapi_tags,
     )
     # setting new logo to docs
-    # openapi_schema["info"]["x-logo"] = {
-    #     "url": LOGO,
-    # }
-
     openapi_schema["info"]["x-logo"]['url'] = LOGO
 
     # app.openapi_schema = openapi_schema
@@ -76,19 +74,21 @@ def get_application() -> FastAPI:
     )
 
     # WHEN DATABASE IS READY
-    application.add_event_handler(
-        "startup",
-        create_start_app_handler(application, settings),
-    )
-    application.add_event_handler(
-        "shutdown",
-        create_stop_app_handler(application),
-    )
+    if not DEBUG:
+        application.add_event_handler(
+            "startup",
+            create_start_app_handler(application, settings),
+        )
+        application.add_event_handler(
+            "shutdown",
+            create_stop_app_handler(application),
+        )
 
     application.add_exception_handler(HTTPException, http_error_handler)
     application.add_exception_handler(RequestValidationError, http422_error_handler)
 
     application.include_router(api_router, prefix=settings.api_prefix)
+    application.include_router(index_router)
     application.include_router(admin_router, prefix=settings.admin_prefix)
     application.mount("/static", StaticFiles(directory="./fastapi_app/static"), name="static")
 
