@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from typing import List
+from datetime import datetime
 import asyncpg
 
 from fastapi_app.core.db import get_db
@@ -8,40 +9,41 @@ from fastapi_app.core.db import get_db
 router = APIRouter()
 
 
-class User(BaseModel):
+class Request(BaseModel):
     id: int
-    full_name: str
-    username: str
-    email: str
-    telephone: str
+    timestamp: datetime
     company_id: int
-    created_at: str
+    user_id: str
+    chat_id: str
+    raw_request: str
+    filter_id: int
+    timestamp_filter: datetime
+    parent_response_id: int
+    status: str
 
 
-
-
-@router.get("/users/", response_model=List[User])
+@router.get("/requests/", response_model=List[Request], include_in_schema=True)
 async def read_items(db: asyncpg.Pool = Depends(get_db)):
     async with db.acquire() as connection:
-        result = await connection.fetch('SELECT * FROM users')
+        result = await connection.fetch('SELECT * FROM requests')
     return result
 
 
-@router.get("/companies/")
+@router.get("/companies/", include_in_schema=True)
 async def read_items(db: asyncpg.Pool = Depends(get_db)):
     async with db.acquire() as connection:
         result = await connection.fetch('SELECT * FROM companies')
     return result
 
 
-@router.get("/keys/")
+@router.get("/keys/", include_in_schema=True)
 async def read_items(db: asyncpg.Pool = Depends(get_db)):
     async with db.acquire() as connection:
         result = await connection.fetch('SELECT * FROM api_keys')
     return result
 
 
-@router.get("/list_db_tables/")
+@router.get("/list_db_tables/", include_in_schema=True)
 async def read_items(db: asyncpg.Pool = Depends(get_db)):
     async with db.acquire() as connection:
         result = await connection.fetch("SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname = 'public'")
@@ -52,7 +54,7 @@ async def read_items(db: asyncpg.Pool = Depends(get_db)):
     return {"db_tables": [record['tablename'] for record in result]}
 
 
-@router.get("/show_db_tables/")
+@router.get("/show_db_tables/", include_in_schema=False)
 async def read_items(db: asyncpg.Pool = Depends(get_db)):
     async with db.acquire() as connection:
         result = await connection.fetch("SELECT * FROM pg_catalog.pg_tables WHERE schemaname = 'public'")

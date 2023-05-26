@@ -1,6 +1,7 @@
 import asyncpg
 from fastapi import Depends, APIRouter, Header
 from loguru import logger
+from typing import Union
 from starlette import status
 
 from ...core.db import get_db
@@ -13,7 +14,7 @@ router = APIRouter()
 
 
 @router.get("")
-async def get_filters(active_only: bool | None = False,
+async def get_filters(active_only: Union[bool, None] = False,
                       company: Company = Depends(get_current_active_company),
                       user_id: str = Header(None),
                       db: asyncpg.Pool = Depends(get_db),

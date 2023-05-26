@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Union
 
 from pydantic import BaseModel, validator
 
@@ -7,13 +7,13 @@ from fastapi_app.routes.keys.schemas import Key
 
 
 class FilterBase(BaseModel):
-    description: str | None
+    description: Union[str, None]
 
 
 class FilterCreate(FilterBase):
     word: str
     company_id: int
-    created_user_id: str | None
+    created_user_id: Union[str, None]
     is_archive: bool = False
 
 
@@ -33,8 +33,8 @@ class FilterUpdate(FilterBase):
 
 class FilterArchive(FilterBase):
     is_archive: bool = True
-    archive_at: datetime | None
-    archive_user_id: str | None
+    archive_at: Union[datetime, None] = datetime.utcnow()
+    archive_user_id: Union[str, None]
 
 
 class Filter(FilterBase):
@@ -51,7 +51,7 @@ class FilterOut(BaseModel):
     id: int
     word: str
     created_at: datetime
-    description: str | None
+    description: Union[str, None]
     is_archive: bool
 
     class Config:

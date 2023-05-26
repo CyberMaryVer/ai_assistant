@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional, Union
 
 from pydantic import BaseModel
 
@@ -8,11 +8,11 @@ from fastapi_app.routes.keys.schemas import Key
 
 class CompanyBase(BaseModel):
     name: str
-    is_disabled: bool | None = False
-    email: str | None
-    website: str | None
-    telephone: str | None
-    description: str | None
+    is_disabled: bool = False
+    email: Union[str, None]
+    website: Union[str, None]
+    telephone: Union[str, None]
+    description: Union[str, None]
 
 
 class CompanyCreate(CompanyBase):
@@ -29,7 +29,7 @@ class CompanyUpdate(CompanyBase):
 class Company(CompanyBase):
     id: int
     created_at: datetime
-    keys: list[Key] | None
+    keys: Union[list[Key], None]
 
     class Config:
         orm_mode = True

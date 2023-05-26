@@ -2,6 +2,8 @@
 tqdm
 numpy
 plotly
+configparser
+email-validator
 
 # FOR OPENAI
 openai
@@ -9,6 +11,9 @@ langchain
 tiktoken
 requests
 faiss-cpu
+
+# FOR NLP
+pymystem3
 
 # FOR FASTAPI
 fastapi
@@ -25,8 +30,6 @@ prometheus_fastapi_instrumentator
 # OTHER
 # gif[plotly]
 # gif==3.0.0
-scipy
+pandas
 pydantic
 json2table
-configparser
-email-validator

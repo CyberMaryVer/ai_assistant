@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Optional
+from typing import Union
 
 from pydantic import BaseModel, validator
 
@@ -9,8 +9,8 @@ valid_values = ["general", "topic", "sources"]
 
 class KeyBase(BaseModel):
     company_id: int
-    key_type: str | None = "general"
-    is_disabled: bool | None = False
+    key_type: Union[str, None] = "general"
+    is_disabled: Union[bool, None] = False
 
     @validator('key_type')
     def key_type_valid(cls, v):
@@ -20,11 +20,11 @@ class KeyBase(BaseModel):
 
 
 class KeyCreate(KeyBase):
-    expired_at: datetime | None = datetime.utcnow() + timedelta(days=30)
+    expired_at: Union[datetime, None] = datetime.utcnow() + timedelta(days=30)
 
 
 class KeyUpdate(KeyBase):
-    expired_at: datetime | None
+    expired_at: Union[datetime, None]
 
 
 class Key(KeyBase):

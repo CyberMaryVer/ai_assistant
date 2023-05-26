@@ -14,7 +14,7 @@ nenv/
 # Secrets
 server-info
 /fastapi_app/chatbot/secret.py
-config.env
+secret.env
 
 # Logs
 logs/

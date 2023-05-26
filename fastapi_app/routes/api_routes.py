@@ -34,10 +34,15 @@ class QuestionParams(BaseModel):
     update_sources: bool = Query(False, description="Update sources")
 
 
+class QuestionParamsSimple(BaseModel):
+    api_key: str = Query(OPENAI_API_KEY, description="API key")
+
+
 class DebugParams(QuestionParams):
     html: bool = Query(False, description="Generate html")
     verbose: bool = Query(False, description="Verbose")
     temperature: float = Query(0.01, description="Temperature")
+    return_context: bool = Query(False, description="Return context")
 
 
 def _second_chance(answer, sources, user_input, api_key):
@@ -61,20 +66,23 @@ def _second_chance(answer, sources, user_input, api_key):
 async def ask_chatbot(
         user_id: str,
         user_input: str = Body(..., example="How are you?", description="User text input", max_length=1500),
-        question: QuestionParams = Body(...),
+        question: QuestionParamsSimple = Body(...),
 ):
     """
     API endpoint for AI assistant (simple version)
     """
     config = {"user_id": user_id,
               "user_input": user_input,
-              "topic": question.topic,
               "api_key": question.api_key,
               }
     print("user request:", config)
+
+    start_time = time()
     result = get_answer_simple(question=user_input, api_key=question.api_key)
+    elapsed_time = time() - start_time
+
     try:
-        pass
+        result.update({"user_id": user_id, "user_input": user_input, "elapsed_time": elapsed_time})
     except Exception as e:
         print(f"Error decoding: {e}")
 
@@ -82,7 +90,7 @@ async def ask_chatbot(
 
 
 @router.post('/chatbot_topic/{user_id}', include_in_schema=True, responses=CHAT_RESPONSES)
-async def main_endpoint(
+async def ask_assistant(
         user_id: str,
         user_input: str = Body(..., example="How are you?", description="User text input", max_length=1500),
         params: QuestionParams = Body(...),

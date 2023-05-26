@@ -17,6 +17,8 @@ services:
       HOST: "postgres_db"
     volumes:
       - ./logs/fastapi/:/logs/
+      - ./indexes/:/app/indexes/
+      - ./fastapi_app/:/app/fastapi_app/ # mount the app folder to track changes
     networks:
       - mynetwork
     depends_on:

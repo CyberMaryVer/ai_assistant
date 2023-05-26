@@ -1,7 +1,7 @@
 LOGO = "https://is5-ssl.mzstatic.com/image/thumb/Purple126/v4/83/25/7a/83257a4b-9d54-8af8-8e31-5c79e612dbd9/AppIcon-0-1x_U007emarketing-0-10-0-85-220.png/512x512bb.jpg"
 
 LOGO_HTML = f"""
-<img src="{LOGO}" width="250" height="250">
+<img src="{LOGO}" width="240" height="240">
 """
 
 DESCRIPTION = f"""
@@ -9,18 +9,29 @@ DESCRIPTION = f"""
 
 АПИ для работы с AI-ассистентом. Позволяет выполнять следующие операции:
 
-**ДЛЯ РАЗРАБОТЧИКОВ**
-* Регистрация пользователей
-* Аутентификация пользователей
-* Генерация нового ключа доступа к АПИ (при этом ключ привязан к компании и к конкретной тематике)
-* Получение списка ключей доступа к АПИ для конкретной компании
-* Удаление ключа доступа к АПИ
-
-**ДЛЯ ПОЛЬЗОВАТЕЛЕЙ**
+**Для пользователей**
 * Получение списка тематик
-* Получение списка тематик, доступных для конкретного пользователя
-* Получение ответа от AI-ассистента по конкретной тематике
-* Получение списка ответов от AI-ассистента по конкретной тематике
+* Получение ответа от AI-ассистента в обычном режиме
+* Получение ответа от AI-ассистента в расширенном режиме (с контекстом)
+* Получение списка источников по тематике
+
+<details>
+  <summary>**Для администраторов**</summary>
+    <p>Для администраторов доступны все операции, описанные выше.</p>
+    <p>Кроме того, администратор может:</p>
+    <ul>
+        <li>Добавлять новые тематики</li>
+        <li>Добавлять новые ответы на вопросы</li>
+        <li>Добавлять новые источники</li>
+        <li>Добавлять новые теги</li>
+        <li>Добавлять новых пользователей</li>
+        <li>Получать список пользователей</li>
+        <li>Получать список тематик</li>
+        <li>Получать список вопросов</li>
+        <li>Получать список источников</li>
+        <li>Получать список тегов</li>
+    </ul>
+</details>
 
 """
 
@@ -30,25 +41,25 @@ TAGS_METADATA = [
         "description": "Documentation for AI assistant API is available here.",
         "externalDocs": {
             "description": "External docs",
-            "url": "http://localhost:9000/redoc",
+            "url": "http://localhost:8000/redoc",
         },
     },
-    # {
-    #     "name": "files",
-    #     "description": "Operations with files. For developers. These endpoints are not available in production.",
-    # },
-    # {
-    #     "name": "tables",
-    #     "description": "Database queries. For developers. These endpoints are not available in production.",
-    # },
+    {
+        "name": "files",
+        "description": "Operations with files. For demo only. Not available in production.",
+    },
+    {
+        "name": "tables",
+        "description": "Database queries. For demo only. Not available in production.",
+    },
     # {
     #     "name": "users",
     #     "description": "Operations with users. For developers. These endpoints are not available in production."
     # },
-    # {
-    #     "name": "healthcheck",
-    #     "description": "Healthcheck endpoint. Returns 200 if the service is up and running.",
-    # },
+    {
+        "name": "healthcheck",
+        "description": "Healthcheck endpoint. Returns 200 if the service is up and running.",
+    },
 ]
 CONTACT = {
     "name": "AI ENGINEERS",

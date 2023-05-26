@@ -96,3 +96,4 @@ if __name__ == '__main__':
     # print_openai_answer("Как рассчитывается EBITDA?", verbose=False)
     # print_openai_answer("Как рассчитать НДФЛ?", verbose=False)
     print_openai_answer("Можно ли уволить самозанятого?", faiss_index='tk', verbose=False, api_key=OPENAI_API_KEY)
+    print_openai_answer("Сколько зарабатывает ML инженер?", faiss_index='business', verbose=False, api_key=OPENAI_API_KEY)

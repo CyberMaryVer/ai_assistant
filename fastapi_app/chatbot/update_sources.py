@@ -1,21 +1,27 @@
 import requests
+import pandas as pd
 
 
-def update_sources(list_of_sources):
+def check_sources(list_of_sources):
     list_of_texts = []
     for s in list_of_sources:
-        print(f"Updating {s}...")
+        print(f"Checking {s}...")
         try:
             r = requests.get(s)
             if r.status_code == 200:
                 text_from_source = r.text
                 list_of_texts.append(text_from_source)
-                print(f"Updated {s}: {len(text_from_source)} symbols")
+                print(f"Source {s}: {len(text_from_source)} symbols")
                 print("First 1000 symbols:", text_from_source[:1000])
             else:
                 print(f"Error {r.status_code}")
         except Exception as e:
             print(f"Error {e}")
+
+
+def add_tk_sources(list_of_sources):
+    tk_sources = [s.replace('business', 'tk') for s in sources]
+    return tk_sources
 
 
 if __name__ == "__main__":

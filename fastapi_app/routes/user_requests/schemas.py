@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Union
 
 from fastapi import Query
 from pydantic import BaseModel
@@ -11,10 +11,10 @@ from fastapi_app.routes.keys.schemas import Key
 example = "Я вижу большую кошку на дереве."
 
 status_list = {"received": "Вопрос получен",
-               "filtered_rejected": "Вопрос не прошол фильтры",
+               "filtered_rejected": "Вопрос не прошел фильтры",
                "filtered_timeout": "превышено время проверки фильтрами",
                "accepted": "Вопрос принят",
-               "response_generation_error": "Произошла ошибка при генераци ответа",
+               "response_generation_error": "Произошла ошибка при генерации ответа",
                "meaningless_request": "Вопрос не имеет смысла",
                "answered": "Ответ предоставлен"}
 
@@ -25,22 +25,23 @@ class UserRequestBase(BaseModel):
 
 class UserRequestCreate(UserRequestBase):
     company_id: int
-    user_id: str | None
-    chat_id: str | None
+    user_id: Union[str, None]
+    chat_id: Union[str, None]
     status: str
-    response_id: int | None = None
+    response_id: Union[int, None] = None
+
 
 class UserRequestUpdate(BaseModel):
     status: str
-    filter_id: int | None = None
-    timestamp_filter: datetime | None = None
+    filter_id: Union[int, None] = None
+    timestamp_filter: Union[datetime, None] = None
 
 
 class UserRequest(UserRequestCreate):
     id: int
     timestamp: datetime
-    filter_id: int | None
-    timestamp_filter: datetime | None
+    filter_id: Union[int, None]
+    timestamp_filter: Union[datetime, None]
 
     class Config:
         orm_mode = True
@@ -53,8 +54,8 @@ class UserRequestOut(BaseModel):
     user_id: str
     status: str
     timestamp: datetime
-    filter_id: int | None
-    timestamp_filter: datetime | None
+    filter_id: Union[int, None]
+    timestamp_filter: Union[datetime, None]
 
     class Config:
         orm_mode = True
@@ -62,7 +63,7 @@ class UserRequestOut(BaseModel):
 
 
 class UserRequestDialog(UserRequest):
-    response: list[dict] | None
+    response: Union[list[dict], None]
 
 # UserRequestRef = ForwardRef("UserRequestPerent")
 # class UserRequestPerent(UserRequest):
