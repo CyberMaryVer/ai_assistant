@@ -8,7 +8,7 @@ from typing import ForwardRef
 
 from fastapi_app.routes.keys.schemas import Key
 
-example = "Я вижу большую кошку на дереве."
+example = "как начисляется ндфл сотруднику работающему из другой страны?"
 
 status_list = {"received": "Вопрос получен",
                "filtered_rejected": "Вопрос не прошел фильтры",
@@ -21,6 +21,7 @@ status_list = {"received": "Вопрос получен",
 
 class UserRequestBase(BaseModel):
     raw_text: str = Query(example, description="Вопрос пользователя")
+    topic: Union[str, None] = Query('business', example='tk', description="Choose topic: [business, tk]")
 
 
 class UserRequestCreate(UserRequestBase):

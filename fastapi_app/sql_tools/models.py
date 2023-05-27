@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, Text, TIMESTAMP, ForeignKey, create_engine
+from sqlalchemy import Column, Integer, String, Boolean, Text, TIMESTAMP, ForeignKey, create_engine, ARRAY
 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -72,6 +72,7 @@ class Requests(Base):
     chat_id = Column(String)
 
     raw_text = Column(Text, nullable=False)
+    topic = Column(String)
 
     filter_id = Column(Integer, ForeignKey('filtering_rules.id'))
     timestamp_filter = Column(TIMESTAMP)
@@ -89,6 +90,7 @@ class Responses(Base):
     timestamp = Column(TIMESTAMP)
     request_id = Column(Integer, ForeignKey('requests.id'), nullable=False)
     raw_text = Column(Text)
+    sources = Column(ARRAY(String))
     status = Column(String, nullable=False)
 
     def __repr__(self):

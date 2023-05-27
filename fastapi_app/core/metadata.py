@@ -44,14 +44,14 @@ TAGS_METADATA = [
             "url": "http://localhost:8000/redoc",
         },
     },
-    {
-        "name": "files",
-        "description": "Operations with files. For demo only. Not available in production.",
-    },
-    {
-        "name": "tables",
-        "description": "Database queries. For demo only. Not available in production.",
-    },
+    # {
+    #     "name": "files",
+    #     "description": "Operations with files. For demo only. Not available in production.",
+    # },
+    # {
+    #     "name": "tables",
+    #     "description": "Database queries. For demo only. Not available in production.",
+    # },
     # {
     #     "name": "users",
     #     "description": "Operations with users. For developers. These endpoints are not available in production."

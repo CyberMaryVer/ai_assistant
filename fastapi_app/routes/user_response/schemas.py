@@ -15,6 +15,7 @@ status_list = {"successful": "Ответ подготовлен",
 
 class UserResponseBase(BaseModel):
     raw_text: Union[str, None]
+    sources: Union[list[str], None]
 
 
 class UserResponseCreate(UserResponseBase):
