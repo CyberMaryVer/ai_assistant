@@ -218,7 +218,12 @@ async def generate_response(db: asyncpg.Pool, obj: UserRequest):
     logger.info(f"Начали генерировать ответ на вопрос {obj.id}")
     logger.debug(f"{obj=}")
     # await sleep(30)
-    bot_answer = await calling_assistant(obj.raw_text, obj.topic)
+    try:
+        bot_answer = await calling_assistant(obj.raw_text, obj.topic)
+    except Exception:
+        request_update = UserRequestUpdate(status="rate_limit")
+        await user_requests_servise.update(db, obj.id, request_update)
+        return False
 
     logger.success(f"Получили ответ на вопрос {obj.id}, {bot_answer=}")
 
@@ -233,6 +238,10 @@ async def generate_response(db: asyncpg.Pool, obj: UserRequest):
 
         request_update = UserRequestUpdate(status="answered")
 
+        await user_requests_servise.update(db, obj.id, request_update)
+
+    else:
+        request_update = UserRequestUpdate(status="response_generation_error")
         await user_requests_servise.update(db, obj.id, request_update)
 
 

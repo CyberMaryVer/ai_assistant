@@ -14,6 +14,7 @@ status_list = {"received": "Вопрос получен",
                "filtered_rejected": "Вопрос не прошел фильтры",
                "filtered_timeout": "превышено время проверки фильтрами",
                "accepted": "Вопрос принят",
+               "rate_limit": "Превышен rate_limit запросов",
                "response_generation_error": "Произошла ошибка при генерации ответа",
                "meaningless_request": "Вопрос не имеет смысла",
                "answered": "Ответ предоставлен"}
