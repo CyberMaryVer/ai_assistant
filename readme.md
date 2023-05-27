@@ -5,7 +5,7 @@
 
 # Описание проекта
 
-![img][product-screenshot1]
+[![img][product-screenshot1]][demo-url]
 
 Умный корпоративный ассистент, который помогает быстро находить специализированную информацию по заранее определенным тематикам.
 
@@ -172,6 +172,7 @@ DEBUG=True
 [license-shield]: https://img.shields.io/badge/License-APACHE-yellow.svg?style=for-the-badge
 [license-url]: https://github.com/CyberMaryVer/ai_assistant/blob/main/LICENSE
 [product-logo]: images/logo.jpg
+[demo-url]: http://178.170.196.101:8080/
 [product-screenshot1]: images/landing.jpg
 [product-screenshot2]: images/api.jpg
 [product-screenshot3]: images/docs.jpg
