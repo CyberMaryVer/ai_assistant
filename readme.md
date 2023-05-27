@@ -83,12 +83,16 @@ PostgreSQL база данных, которая хранит:
 
 <details>
   <summary>Интерфейс</summary>
-  
+
+  АПИ доступно по адресу `http://localhost:8000/docs`
+
   ![img][product-screenshot2]
 </details>
 
 <details>
   <summary>Документация</summary>
+
+  Документация доступна по адресу `http://localhost:8000/redoc`
   
   ![img][product-screenshot3]
 </details>
