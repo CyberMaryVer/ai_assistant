@@ -146,8 +146,8 @@ async def calling_assistant(user_input: str, topic: str = "default", enrich_sour
                             tada_key: str = "ratelimit"):
     api_key, uses_left = _get_valid_key(tada_key)
     if api_key is None:
-        logger.warning("Превышено лимит запросов, попробуйте позже")
-        raise PermissionError("Превышено лимит запросов, попробуйте позже")
+        logger.warning("Превышен лимит запросов, попробуйте позже")
+        raise PermissionError("Превышен лимит запросов, попробуйте позже")
 
     answer, sources = answer_with_openai(question=user_input, api_key=api_key, faiss_index=topic)
     answer, sources = second_chance(answer, sources, user_input, api_key)
