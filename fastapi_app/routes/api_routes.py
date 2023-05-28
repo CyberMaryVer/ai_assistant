@@ -150,7 +150,7 @@ async def calling_assistant(user_input: str, topic: str = "default", enrich_sour
         raise PermissionError("Превышено лимит запросов, попробуйте позже")
 
     answer, sources = answer_with_openai(question=user_input, api_key=api_key, faiss_index=topic)
-    answer, sources = _second_chance(answer, sources, user_input, api_key)
+    answer, sources = second_chance(answer, sources, user_input, api_key)
 
     if enrich_sources and topic == 'tk':
         sources = add_tk_sources(sources)
