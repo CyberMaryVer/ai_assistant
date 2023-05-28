@@ -2,12 +2,6 @@ version: "3.9"
 services:
   ml:
     build: ./fastapi_app
-#    image: mar1a/msk23:base
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: '0.80'
-#          memory: 12g
     restart: on-failure
     ports:
       - "8000:8000"
@@ -17,7 +11,7 @@ services:
       HOST: "postgres_db"
       OPENAI_API_KEY: ${OPENAI_API_KEY}
     volumes:
-      - ./logs/fastapi/:/logs/
+      - ./logs/fastapi/:/app/logs/
       - ./indexes/:/app/indexes/
       - ./fastapi_app/:/app/fastapi_app/ # mount the app folder to track changes
     networks:

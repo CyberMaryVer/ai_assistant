@@ -77,4 +77,7 @@ class AppSettings(BaseAppSettings):
             logging_logger = logging.getLogger(logger_name)
             logging_logger.handlers = [InterceptHandler(level=self.logging_level)]
 
-        logger.configure(handlers=[{"sink": sys.stderr, "level": self.logging_level}])
+        logger.configure(handlers=[
+            {"sink": sys.stderr, "level": self.logging_level},
+            {"sink": "/app/logs/log.log", "level": self.logging_level}
+        ])
