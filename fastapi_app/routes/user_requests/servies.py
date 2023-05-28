@@ -1,4 +1,5 @@
 import datetime
+import os
 from asyncio import sleep
 from typing import Generic, TypeVar, Type
 
@@ -12,6 +13,7 @@ from starlette import status
 
 from fastapi_app.sql_tools import models
 from .schemas import UserRequest, UserRequestCreate, UserRequestUpdate, UserRequestDialog
+from ..api_routes import calling_assistant
 from ..content_filter.schemas import Filter
 from ..content_filter.servies import filter_servise
 from ..user_response.schemas import UserResponseCreate
@@ -214,14 +216,20 @@ class UserRequestsService:
 
 async def generate_response(db: asyncpg.Pool, obj: UserRequest):
     logger.info(f"Начали генерировать ответ на вопрос {obj.id}")
-
-    await sleep(30)
-    bot_answer = obj.raw_text[::-1]
+    logger.debug(f"{obj=}")
+    # await sleep(30)
+    try:
+        bot_answer = await calling_assistant(obj.raw_text, obj.topic)
+    except Exception:
+        request_update = UserRequestUpdate(status="rate_limit")
+        await user_requests_servise.update(db, obj.id, request_update)
+        return False
 
     logger.success(f"Получили ответ на вопрос {obj.id}, {bot_answer=}")
 
-    if bot_answer:
-        response = UserResponseCreate(raw_text=bot_answer,
+    if bot_answer.get('answer'):
+        response = UserResponseCreate(raw_text=bot_answer.get('answer'),
+                                      sources=bot_answer.get('sources'),
                                       request_id=obj.id,
                                       status='successful'
                                       )
@@ -230,6 +238,10 @@ async def generate_response(db: asyncpg.Pool, obj: UserRequest):
 
         request_update = UserRequestUpdate(status="answered")
 
+        await user_requests_servise.update(db, obj.id, request_update)
+
+    else:
+        request_update = UserRequestUpdate(status="response_generation_error")
         await user_requests_servise.update(db, obj.id, request_update)
 
 

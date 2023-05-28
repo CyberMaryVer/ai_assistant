@@ -1,9 +1,11 @@
 import json
 import os
+from fastapi import HTTPException
 from typing import Any
 from pydantic import BaseModel
 from time import time
 from fastapi import Query, APIRouter, Body, Response
+from starlette import status
 
 from fastapi_app.utils.logger import setup_logging
 from fastapi_app.responses.api_responses import CHAT_RESPONSES, CHAT_RESPONSES_SIMPLE
@@ -138,3 +140,22 @@ async def ask_assistant(
 
     logger.info(f"response: {response_content}")
     return PrettyJSONResponse(content=response_content)
+
+
+async def calling_assistant(user_input: str, topic: str = "default", enrich_sources: bool = True,
+                            tada_key: str = "ratelimit"):
+    api_key, uses_left = _get_valid_key(tada_key)
+    if api_key is None:
+        logger.warning("Превышено лимит запросов, попробуйте позже")
+        raise PermissionError("Превышено лимит запросов, попробуйте позже")
+
+    answer, sources = answer_with_openai(question=user_input, api_key=api_key, faiss_index=topic)
+    answer, sources = _second_chance(answer, sources, user_input, api_key)
+
+    if enrich_sources and topic == 'tk':
+        sources = add_tk_sources(sources)
+
+    response_content = {"answer": answer, "sources": sources}
+    logger.info(f"response: {response_content}, {uses_left=}")
+
+    return response_content

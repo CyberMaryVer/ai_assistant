@@ -7,6 +7,7 @@ CREATE TABLE "requests" (
   "user_id" varchar,
   "chat_id" varchar,
   "raw_text" text NOT NULL,
+  "topic" text DEFAULT "default",
   "filter_id" int,
   "timestamp_filter" timestamp,
   "parent_resp_id" int,
@@ -18,6 +19,7 @@ CREATE TABLE "responses" (
   "timestamp" timestamp DEFAULT now(),
   "request_id" int NOT NULL,
   "raw_text" text,
+  "sources" varchar[],
   "status" varchar NOT NULL
 );
 
