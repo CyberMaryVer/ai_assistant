@@ -36,7 +36,7 @@ class PrettyJSONResponse(Response):
 
 class QuestionParams(BaseModel):
     tada_key: str = Query('54321test', description="Tada key")
-    topic: str = Query('business', example='tk', description="Choose topic: [business, tk, events]")
+    topic: str = Query('business', example='tk', description="Choose topic: [business, tk, hr]")
     enrich_sources: bool = Query(False, description="Add links to sources (tk only)")
 
 

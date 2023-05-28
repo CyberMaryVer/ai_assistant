@@ -9,6 +9,8 @@
 
 Умный корпоративный ассистент, который помогает быстро находить специализированную информацию по заранее определенным тематикам.
 
+Пример взаимодействи с нашим АПИ можно посмотреть [здесь][demo-url].
+
 ## Основные возможности
 АПИ чат-бота для корпоративного чата, который позволяет:
 * Получать ответы на определенную тематику
@@ -190,5 +192,6 @@ DEBUG=True
 [github-url]: https://github.com/CyberMaryVer/ai_assistant
 [linkedin-shield]: https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white
 [linkedin-url]: https://www.linkedin.com/in/maria-startseva/
+[demo-url]: https://cybermaryver-simple-front-for-chatbot-app-0tqyzf.streamlit.app/
 
 

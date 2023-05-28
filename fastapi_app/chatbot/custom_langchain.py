@@ -5,12 +5,15 @@ from langchain.vectorstores.faiss import FAISS
 
 BUSINESS_INDEX_PATH = "./../../indexes/faiss-b/" if __name__ == "__main__" else "./indexes/faiss-b/"
 TK_INDEX_PATH = "./../../indexes/faiss-tk/" if __name__ == "__main__" else "./indexes/faiss-tk/"
+HR_INDEX_PATH = "./../../indexes/faiss-hr/" if __name__ == "__main__" else "./indexes/faiss-hr/"
 
-print(__name__, __file__, BUSINESS_INDEX_PATH, TK_INDEX_PATH)
+# print(__name__, __file__, BUSINESS_INDEX_PATH, TK_INDEX_PATH, HR_INDEX_PATH)
 
 
 def get_faiss_index(faiss_index=None, api_key=None):
-    index_path = TK_INDEX_PATH if faiss_index == 'tk' else BUSINESS_INDEX_PATH
+    index_path = TK_INDEX_PATH if faiss_index == 'tk' \
+        else HR_INDEX_PATH if faiss_index == 'hr' \
+        else BUSINESS_INDEX_PATH
     return FAISS.load_local(folder_path=index_path, embeddings=OpenAIEmbeddings(openai_api_key=api_key))
 
 
@@ -95,5 +98,6 @@ if __name__ == '__main__':
     # print_openai_answer("Какова средняя стоимость часа работы дизайнера?", verbose=True)
     # print_openai_answer("Как рассчитывается EBITDA?", verbose=False)
     # print_openai_answer("Как рассчитать НДФЛ?", verbose=False)
-    print_openai_answer("Можно ли уволить самозанятого?", faiss_index='tk', verbose=False, api_key=OPENAI_API_KEY)
-    print_openai_answer("Сколько зарабатывает ML инженер?", faiss_index='business', verbose=False, api_key=OPENAI_API_KEY)
+    # print_openai_answer("Можно ли уволить самозанятого?", faiss_index='tk', verbose=False, api_key=OPENAI_API_KEY)
+    # print_openai_answer("Сколько зарабатывает ML инженер?", faiss_index='business', verbose=False, api_key=OPENAI_API_KEY)
+    print_openai_answer("Какие бизнес форумы пройдут в 2023 году?", faiss_index='hr', verbose=False, api_key=OPENAI_API_KEY)
