@@ -9,7 +9,7 @@
 
 Умный корпоративный ассистент, который помогает быстро находить специализированную информацию по заранее определенным тематикам.
 
-Пример взаимодействи с нашим АПИ можно посмотреть [здесь][demo-url].
+Пример взаимодействи с нашим АПИ можно посмотреть [здесь][demo-url-front].
 
 ## Основные возможности
 АПИ чат-бота для корпоративного чата, который позволяет:
@@ -72,7 +72,7 @@ PostgreSQL база данных, которая хранит:
 ## Веб-интерфейс пользователя
 
 Пример интерфейса пользователя:
-[![Product Name Screen Shot][product-screenshot4]](https://example.com)
+[![Product Name Screen Shot][product-screenshot4]][demo-url-front]
 
 <details>
   <summary>Примечание</summary>
@@ -192,6 +192,6 @@ DEBUG=True
 [github-url]: https://github.com/CyberMaryVer/ai_assistant
 [linkedin-shield]: https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white
 [linkedin-url]: https://www.linkedin.com/in/maria-startseva/
-[demo-url]: https://cybermaryver-simple-front-for-chatbot-app-0tqyzf.streamlit.app/
+[demo-url-front]: https://cybermaryver-simple-front-for-chatbot-app-0tqyzf.streamlit.app/
 
 
