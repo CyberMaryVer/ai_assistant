@@ -36,7 +36,7 @@ def extract_sources(context):
     return sources
 
 
-def get_context(question, faiss_index='default', api_key=None):
+def get_context(question, faiss_index='business', api_key=None):
     search_index = get_faiss_index(faiss_index, api_key)
     context = search_index.similarity_search(question, k=4)
     sources = extract_sources(context)
@@ -45,10 +45,30 @@ def get_context(question, faiss_index='default', api_key=None):
     return context, sources
 
 
+def get_context_with_score(question, faiss_index='business', api_key=None, threshold=0.33):
+    search_index = get_faiss_index(faiss_index, api_key)
+    context = search_index.similarity_search_with_score(question, k=4)
+    for d, s in context:
+        print("\033[093SCORE:", s, "\033[0m")
+        print("CONTENT:", d.page_content)
+        print("SOURCE:", d.metadata['source'])
+        print("---")
+    docs = [d for d, s in context if s < threshold]
+    sources = extract_sources(docs)
+    content = [d.page_content for d in docs]
+    context = '\n\n###\n\n'.join(content)
+    return context, sources
+
+
 def answer_with_openai(question, verbose=False, faiss_index='default', api_key=None, update_sources=False):
-    context, sources = get_context(question, faiss_index=faiss_index, api_key=api_key)
+    # context, sources = get_context(question, faiss_index=faiss_index, api_key=api_key)
+    context, sources = get_context_with_score(question, faiss_index=faiss_index, api_key=api_key)
     print(context) if verbose else None
-    answer = answer_with_context(question, context, api_key=api_key)
+    if context != "":
+        answer = answer_with_context(question, context, api_key=api_key)
+    else:
+        answer = answer_without_context(question, api_key=api_key)
+        sources = {"OpenAI": {"href": "https://chat.openai.com/", "name": "OpenAI GPT-3.5 Turbo w/o context"}}
     print(answer) if verbose else None
     print(sources) if verbose else None
     return answer, sources
@@ -73,7 +93,36 @@ def answer_with_context(
         max_tokens=2400,
 ):
     openai.api_key = api_key
-    task = "Answer the question based on the context below, you can think on English but return answer in Russian\n\n"
+    task = "You are an expert. Answer the question based on the context below. " \
+           "Be specific and use bullet points, return answer in Russian.\n\n"
+    info = f"Context: {context}\n\n---\n\nQuestion: {question}\nAnswer:"
+    messages = [{"role": "system", "content": f"{task}{info}"}]
+    try:
+        # Create a completions using the question and context
+        completion = openai.ChatCompletion.create(
+            messages=messages,
+            temperature=0.02,
+            max_tokens=max_tokens,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0,
+            model=model,
+        )
+        return completion['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        print("[ERROR]", e)
+        return ""
+
+
+def answer_without_context(
+        question,
+        api_key,
+        model="gpt-3.5-turbo",
+        max_tokens=2800,
+):
+    openai.api_key = api_key
+    context = "You an expert in the field of business, finance, law, and HR. You are answering questions from a client."
+    task = "Answer the question. Be specific and use bullet points, return answer in Russian\n\n"
     info = f"Context: {context}\n\n---\n\nQuestion: {question}\nAnswer:"
     messages = [{"role": "system", "content": f"{task}{info}"}]
     try:
@@ -95,9 +144,18 @@ def answer_with_context(
 
 if __name__ == '__main__':
     from fastapi_app.chatbot.secret import OPENAI_API_KEY
-    # print_openai_answer("Какова средняя стоимость часа работы дизайнера?", verbose=True)
+    print(OPENAI_API_KEY)
+
+    print_openai_answer("Какова средняя стоимость часа работы дизайнера?", verbose=True, api_key=OPENAI_API_KEY)
     # print_openai_answer("Как рассчитывается EBITDA?", verbose=False)
     # print_openai_answer("Как рассчитать НДФЛ?", verbose=False)
     # print_openai_answer("Можно ли уволить самозанятого?", faiss_index='tk', verbose=False, api_key=OPENAI_API_KEY)
     # print_openai_answer("Сколько зарабатывает ML инженер?", faiss_index='business', verbose=False, api_key=OPENAI_API_KEY)
-    print_openai_answer("Какие бизнес форумы пройдут в 2023 году?", faiss_index='hr', verbose=False, api_key=OPENAI_API_KEY)
+    # print_openai_answer("Какие выплаты может получить работник при увольнении?", faiss_index='hr', verbose=False, api_key=OPENAI_API_KEY)
+
+    get_context_with_score("Придумай план корпоратива в пяти пунктах?",
+                           faiss_index='hr',
+                           api_key=OPENAI_API_KEY)
+
+    # print_openai_answer("Какие выплаты может получить работник при увольнении?", faiss_index='tk', verbose=False,
+    #                     api_key=OPENAI_API_KEY)

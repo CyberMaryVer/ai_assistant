@@ -65,11 +65,12 @@ def get_answer_simple(question, prompt=None, api_key=OPENAI_API_KEY):
             model=model_type,
             messages=messages,
             temperature=0,
+            max_tokens=2000,
         )
         summary = completion['choices'][0]['message']['content'].strip()
 
         print(f"\n\33[90mAnswer: {summary}\33[0m")
-        return {"answer": summary}
+        return {"answer": summary, "sources": {"OpenAI": {"href": "https://chat.openai.com/", "name": "OpenAI GPT-3.5 Turbo"}}}
 
     except InvalidRequestError as e:
         print(

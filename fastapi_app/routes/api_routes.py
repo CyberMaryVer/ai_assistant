@@ -1,10 +1,11 @@
 import json
 import os
-from fastapi import HTTPException
+
 from typing import Any
 from pydantic import BaseModel
 from time import time
 from fastapi import Query, APIRouter, Body, Response
+from fastapi.responses import StreamingResponse
 from starlette import status
 
 from fastapi_app.utils.logger import setup_logging
@@ -14,7 +15,6 @@ from fastapi_app.chatbot.custom_langchain import answer_with_openai
 from fastapi_app.chatbot.second_chance import second_chance
 from fastapi_app.chatbot.update_sources import add_tk_sources
 from fastapi_app.chatbot.fake_keys.validate_key import use_key
-
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "OPENAI_API_KEY")
 router = APIRouter()
@@ -121,8 +121,6 @@ async def ask_assistant(
         "topic": params.topic,
         "user_id": user_id,
         "user_key": params.tada_key,
-        # "generate_html": False,
-        # "verbose": False
     }
     print("user request:", config)
     logger.info(f"user request: {config}")
@@ -159,3 +157,32 @@ async def calling_assistant(user_input: str, topic: str = "default", enrich_sour
     logger.info(f"response: {response_content}, {uses_left=}")
 
     return response_content
+
+
+@router.post('/chatbot_stream/{user_id}', include_in_schema=False, responses=CHAT_RESPONSES)
+async def streaming_assistant(
+        user_input: str = Query('как начисляется ндфл сотруднику работающему из другой страны',
+                                example="How are you?",
+                                description="User text input",
+                                max_length=1500),
+):
+    import openai
+
+    async def generate():
+        # Looping over the response
+        context = "You an expert in the field of business, finance, law, and HR. " \
+                  "You are answering questions from a client."
+        task = "Answer the question. Be specific and use bullet points, return answer in Russian\n\n"
+        info = f"Context: {context}\n\n---\n\nQuestion: {user_input}\nAnswer:"
+        messages = [{"role": "system", "content": f"{task}{info}"}]
+        openai.api_key = os.getenv("OPENAI_API_KEY")
+        for resp in openai.ChatCompletion.create(model='gpt-3.5-turbo',
+                                                 messages=messages,
+                                                 max_tokens=1200,
+                                                 temperature=0.01,
+                                                 stream=True):
+            # Assuming here you're yielding the text returned by the model
+            # The actual data structure of `resp` would need to be examined
+            yield resp
+
+    return StreamingResponse(generate(), media_type="application/json")
