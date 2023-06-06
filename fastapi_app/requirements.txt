@@ -14,6 +14,10 @@ faiss-cpu
 
 # FOR NLP
 pymystem3
+transformers == 4.29.2
+sentencepiece == 0.1.99
+torch
+sacremoses
 
 # FOR FASTAPI
 fastapi

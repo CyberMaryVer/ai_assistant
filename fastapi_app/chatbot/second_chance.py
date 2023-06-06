@@ -12,10 +12,14 @@ NOT_OK_ANSWERS = ["нет информации",
                   "не связан с контекстом",
                   "из контекста не ясно",
                   "контекста, так как он не содержит",
-                  "не связана с контекстом"]
+                  "недостаточно информации",
+                  "нет информации в контексте",
+                  "не связана с контекстом",
+                  "не была предоставлена в контексте",
+                  "context"]
 
 SECOND_CHANCE_PROMPT = "Назови пару источников, где можно найти информацию о том, "
-SECOND_CHANCE_PREFIX = " Могу порекомендовать поискать тут:\n"
+SECOND_CHANCE_PREFIX = "Могу порекомендовать поискать тут:\n"
 SECOND_CHANCE_SOURCE = "https://www.google.com/"
 
 
@@ -28,7 +32,7 @@ def second_chance(answer, sources, user_input, api_key):
         try:
             prompt = SECOND_CHANCE_PROMPT
             second_answer = get_answer_simple(question=user_input, prompt=prompt, api_key=api_key)
-            second_answer = answer + SECOND_CHANCE_PREFIX + second_answer["answer"]
+            second_answer = SECOND_CHANCE_PREFIX + second_answer["answer"]
             sources = sources + [SECOND_CHANCE_SOURCE, ]
             return second_answer, sources
 

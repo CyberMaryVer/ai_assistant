@@ -11,7 +11,7 @@ from starlette import status
 from fastapi_app.utils.logger import setup_logging
 from fastapi_app.responses.api_responses import CHAT_RESPONSES, CHAT_RESPONSES_SIMPLE
 from fastapi_app.chatbot.assistant import get_answer_simple
-from fastapi_app.chatbot.custom_langchain import answer_with_openai
+from fastapi_app.chatbot.custom_langchain import answer_with_openai, answer_with_openai_translated
 from fastapi_app.chatbot.second_chance import second_chance
 from fastapi_app.chatbot.update_sources import add_tk_sources
 from fastapi_app.chatbot.fake_keys.validate_key import use_key
@@ -36,7 +36,7 @@ class PrettyJSONResponse(Response):
 
 class QuestionParams(BaseModel):
     tada_key: str = Query('54321test', description="Tada key")
-    topic: str = Query('business', example='tk', description="Choose topic: [business, tk, hr]")
+    topic: str = Query('business', example='tk', description="Choose topic: [business, tk, hr, yt]")
     enrich_sources: bool = Query(False, description="Add links to sources (tk only)")
 
 
@@ -60,6 +60,15 @@ def _get_valid_key(key):
     else:
         logger.info(f"key: {key_status['error']}")
         return None, key_status['error']
+
+
+def get_answer_with_sources(user_input, api_key, topic):
+    if topic == 'yt':
+        answer, sources = answer_with_openai_translated(question=user_input, api_key=api_key, faiss_index=topic)
+    else:
+        answer, sources = answer_with_openai(question=user_input, api_key=api_key, faiss_index=topic)
+    answer, sources = second_chance(answer, sources, user_input, api_key)
+    return answer, sources
 
 
 @router.post('/chatbot_simple/{user_id}', include_in_schema=True, responses=CHAT_RESPONSES_SIMPLE)
@@ -126,8 +135,7 @@ async def ask_assistant(
     logger.info(f"user request: {config}")
 
     start_time = time()
-    answer, sources = answer_with_openai(question=user_input, api_key=api_key, faiss_index=params.topic)
-    answer, sources = second_chance(answer, sources, user_input, api_key)
+    answer, sources = get_answer_with_sources(user_input=user_input, api_key=api_key, topic=params.topic)
     elapsed_time = time() - start_time
 
     if params.enrich_sources and params.topic == 'tk':
