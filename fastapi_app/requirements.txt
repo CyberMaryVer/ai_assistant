@@ -18,6 +18,7 @@ transformers == 4.29.2
 sentencepiece == 0.1.99
 torch
 sacremoses
+# nvidia_cudnn_cu11-8.5.0.96-2-py3-none-manylinux1_x86_64.whl
 
 # FOR FASTAPI
 fastapi

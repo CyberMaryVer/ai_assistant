@@ -6,7 +6,8 @@ COPY ./requirements.txt .
 
 # Update and install deps
 RUN apt-get update && \
-    pip3 install -r requirements.txt
+    pip install --upgrade pip  && \
+    pip install -r requirements.txt
 
 # Copy relevant source code
 COPY . ./fastapi_app

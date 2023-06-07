@@ -7,7 +7,7 @@ CREATE TABLE "requests" (
   "user_id" varchar,
   "chat_id" varchar,
   "raw_text" text NOT NULL,
-  "topic" text DEFAULT "default",
+  "topic" text,
   "filter_id" int,
   "timestamp_filter" timestamp,
   "parent_resp_id" int,

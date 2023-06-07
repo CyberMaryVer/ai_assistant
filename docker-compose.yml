@@ -12,6 +12,7 @@ services:
       PG_USER: "SECRET_USER"
       PG_PASSWORD: "SECRET_KEY"
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      EXTERNAL_HOST: ""
     volumes:
       - ./logs/fastapi/:/app/logs/
       - ./indexes/:/app/indexes/
@@ -23,7 +24,7 @@ services:
         condition: service_healthy
 
   postgres_db:
-    image: "postgres:12"
+    image: "postgres:14"
     restart: always
     ports:
       - "5432:5432"
