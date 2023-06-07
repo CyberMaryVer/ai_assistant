@@ -7,8 +7,10 @@ services:
       - "8000:8000"
     container_name: fastapi
     environment:
-      PORT: 8000
-      HOST: "postgres_db"
+      PG_HOST: "postgres_db"
+      PG_DB_NAME: "pgdatabase"
+      PG_USER: "SECRET_USER"
+      PG_PASSWORD: "SECRET_KEY"
       OPENAI_API_KEY: ${OPENAI_API_KEY}
     volumes:
       - ./logs/fastapi/:/app/logs/

@@ -8,15 +8,15 @@ from pydantic import PostgresDsn, SecretStr
 
 from fastapi_app.core.logging import InterceptHandler
 from fastapi_app.core.base import BaseAppSettings
-from fastapi_app.core.metadata import DESCRIPTION, TAGS_METADATA, CONTACT, LICENSE, SERVERS
-from fastapi_app.config.test_config import TEST_USER, TEST_KEY, TEST_DB
+from fastapi_app.core.metadata import DESCRIPTION, TAGS_METADATA, CONTACT, LICENSE
+from fastapi_app.config.test_config import TEST_PG_USER, TEST_PG_PASSWORD, TEST_PG_DB_NAME, TEST_PG_HOST
 
-secret_user = os.getenv("SECRET_USER") or TEST_USER
-secret_key = os.getenv("SECRET_KEY") or TEST_KEY
-db_name = os.getenv("DB_NAME") or TEST_DB
-host = os.getenv("HOST") or "localhost"
+pg_user = os.getenv("PG_USER") or TEST_PG_USER
+pg_password = os.getenv("PG_PASSWORD") or TEST_PG_PASSWORD
+pg_db_name = os.getenv("PG_DB_NAME") or TEST_PG_DB_NAME
+pg_host = os.getenv("PG_HOST") or TEST_PG_HOST
 
-print(f"HOST {host.upper()}:\033[92m host was identified as [{host}]\033[0m")
+print(f"HOST {pg_host.upper()}:\033[92m host was identified as [{pg_host}]\033[0m")
 
 
 class AppSettings(BaseAppSettings):
@@ -29,20 +29,19 @@ class AppSettings(BaseAppSettings):
     description: str = DESCRIPTION
     version: str = "0.0.0"
 
-    database_url: PostgresDsn = f"postgresql://{secret_user}:{secret_key}@{host}:5432/{db_name}"
+    database_url: PostgresDsn = f"postgresql://{pg_user}:{pg_password}@{pg_host}:5432/{pg_db_name}"
     max_connection_count: int = 10
     min_connection_count: int = 10
-    secret_key: SecretStr = secret_key
+    # secret_key: SecretStr = pg_password
 
     contact = CONTACT
     license_info = LICENSE
     openapi_tags = TAGS_METADATA
-    servers = SERVERS
 
     api_prefix: str = "/api"
     admin_prefix: str = "/admin"
 
-    jwt_token_prefix: str = "Token"
+    # jwt_token_prefix: str = "Token"
 
     allowed_hosts: List[str] = ["*"]
 
@@ -66,9 +65,8 @@ class AppSettings(BaseAppSettings):
             "contact": self.contact,
             "license_info": self.license_info,
             "openapi_tags": self.openapi_tags,
-            # "servers": self.servers,
             "database_url": self.database_url,
-            "secret_key": self.secret_key,
+
         }
 
     def configure_logging(self) -> None:

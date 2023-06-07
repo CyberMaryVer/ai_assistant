@@ -1,3 +1,6 @@
+import os
+
+HOST = os.getenv("EXTERNAL_HOST") or "localhost:8000"
 LOGO = "https://static.vecteezy.com/system/resources/thumbnails/005/381/497/small/cute-robot-illustration-with-happy-expression-free-vector.jpg"
 
 LOGO_HTML = f"""
@@ -41,7 +44,7 @@ TAGS_METADATA = [
         "description": "Documentation for AI assistant API is available here.",
         "externalDocs": {
             "description": "External docs",
-            "url": "http://localhost:8000/redoc",
+            "url": f"http://{HOST}/redoc",
         },
     },
     # {
@@ -63,14 +66,10 @@ TAGS_METADATA = [
 ]
 CONTACT = {
     "name": "AI ENGINEERS",
-    "url": "http://localhost:8000",
+    "url": f"http://{HOST}",
     "email": "mary-ver@yandex.ru",
 }
 LICENSE = {
     "name": "Apache 2.0",
     "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
 }
-SERVERS = [
-        {"url": "localhost:8000"},
-        {"url": "localhost:9000", "description": "Staging environment"},
-    ]
