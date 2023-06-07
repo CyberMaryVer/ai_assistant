@@ -115,11 +115,12 @@ def answer_with_openai(question, faiss_index='default', api_key=None, verbose=Fa
     return answer, sources
 
 
-def answer_with_openai_translated(question, faiss_index='default', api_key=None, verbose=False, temperature=0.01):
+def answer_with_openai_translated(question, faiss_index='default', api_key=None, verbose=False, temperature=0.01,
+                                  translate_answer=True):
     question_en = translate_ru(question+"?")
     answer_en, sources = answer_with_openai(question_en, verbose=verbose, faiss_index=faiss_index, api_key=api_key,
-                                            temperature=temperature, language='en', context_threshold=0.40)
-    answer_ru = translate_en(answer_en.split('\n'))
+                                            temperature=temperature, language='en', context_threshold=0.42)
+    answer_ru = translate_en(answer_en.split('\n')) if translate_answer else answer_en
     return answer_ru, sources
 
 
@@ -184,7 +185,7 @@ def answer_with_context(
         )
         return completion['choices'][0]['message']['content'].strip()
     except Exception as e:
-        print("[ERROR]", e)
+        print("[ERROR-answer_with_context]", e)
         return ""
 
 
@@ -212,7 +213,69 @@ def answer_without_context(
         )
         return completion['choices'][0]['message']['content'].strip()
     except Exception as e:
-        print("[ERROR]", e)
+        print("[ERROR-answer_without_context]", e)
+        return ""
+
+
+def format_answer_with_openai(
+        answer,
+        api_key,
+        model="gpt-3.5-turbo",
+        max_tokens=2800,
+):
+    # print("\033[091mFormatting answer with OpenAI\033[0m")
+    openai.api_key = api_key
+    pretext = "You are editing an answer from an expert."
+    task = "Improve the text below and translate it to Russian. " \
+           "Be specific and use bullet points '<br>🔸'. " \
+           "Don't add any other text\n\n"
+    info = f"Context: {pretext}\n\n---\n\nEnglish text: {answer}\nImproved Russian text:"
+    messages = [{"role": "system", "content": f"{task}{info}"}]
+    try:
+        # Create a completions using the question and context
+        completion = openai.ChatCompletion.create(
+            messages=messages,
+            temperature=0.01,
+            max_tokens=max_tokens,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0,
+            model=model,
+        )
+        return completion['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        print("[ERROR-format_answer_with_openai]", e)
+        return ""
+
+
+def request_openai(messages, api_key, model="gpt-3.5-turbo", max_tokens=2800, temperature=0.01):
+    openai.api_key = api_key
+    try:
+        # Create a completions using the question and context
+        completion = openai.ChatCompletion.create(
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            top_p=1,
+            frequency_penalty=0,
+            presence_penalty=0,
+            model=model,
+        )
+        return completion['choices'][0]['message']['content'].strip()
+    except openai.error.APIError as e:
+        # Handle API error here, e.g. retry or log
+        print(f"OpenAI API returned an API Error: {e}")
+        pass
+    except openai.error.APIConnectionError as e:
+        # Handle connection error here
+        print(f"Failed to connect to OpenAI API: {e}")
+        pass
+    except openai.error.RateLimitError as e:
+        # Handle rate limit error (we recommend using exponential backoff)
+        print(f"OpenAI API request exceeded rate limit: {e}")
+        pass
+    except Exception as e:
+        print("[ERROR-request_openai]", e)
         return ""
 
 
