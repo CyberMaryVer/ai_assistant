@@ -119,6 +119,7 @@ PostgreSQL база данных, которая хранит:
         "api_key": "API_KEY"
       }
     }
+   ```
 2. CURL запрос
 
     ```bash
@@ -141,8 +142,10 @@ PostgreSQL база данных, которая хранит:
 Для запуска проекта необходимо:
 1. Склонировать репозиторий
 2. Перейти в папку проекта
-3. Запустить проект с помощью команды `docker-compose up --build`
-4. Перейти на `localhost:8000` для входа в веб-интерфейс
+3. Создать переменную окружения `OPENAI_API_KEY`
+4. Создать папку для логов `sudo mkdir -m777 -p logs/fastapi`
+5. Запустить проект с помощью команды `docker-compose up --build`
+6. Перейти на `localhost:8000` для входа в веб-интерфейс
 
 ## Запуск АПИ без базы знаний и базы данных
 ```bash
@@ -152,7 +155,7 @@ docker run -d -p 8000:8000 -e OPENAI_API_KEY={your_key} --name smart_assistant s
 ## Запуск без докера
 1. Установить зависимости
 ```bash
-pip install -r requirements.txt
+pip install -r fastapi_app/requirements.txt
 ```
 2. Запустить проект
 ```bash

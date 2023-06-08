@@ -99,7 +99,6 @@ def _fix_answer(text):
 
 
 if __name__ == "__main__":
-    from fastapi_app.chatbot.secret import OPEN_API_KEY
     from fastapi_app.chatbot.translation import translate_ruen, translate_enru
 
     with open("task.txt", "r", encoding="utf-8") as f:
@@ -113,6 +112,6 @@ if __name__ == "__main__":
     document = "Основные нормы законодательства Москвы про ведение бизнеса."
     d_en = translate_ruen(document)
     task = "system: You are a Russian business expert. Please provide a concise answer to the question below."
-    answer = get_answer_simple(question=d_en, prompt=task, api_key=OPEN_API_KEY)
+    answer = get_answer_simple(question=d_en, prompt=task, api_key=OPENAI_API_KEY)
     d_ru = translate_enru(answer["answer"])
     print(d_ru)
