@@ -70,6 +70,22 @@ async def get_request(request_id: int,
     return obj
 
 
+@router.get("/{request_id}/dialog")
+async def get_dialog(request_id: int,
+                     company: Company = Depends(get_current_active_company),
+                     user_id: str = Header(None),
+                     db: asyncpg.Pool = Depends(get_db),
+                     ) -> UserRequestDialog:
+    """Получить историю диалога"""
+    logger.info(f"[Response] {user_id=} сделал запрос от Компании: '{company.name}'")
+
+    obj = await servise.get_dialog(db, request_id, company.id)
+
+    logger.debug(f"{obj=}")
+
+    return obj
+
+
 @router.get("/{request_id}")
 async def get_request(request_id: int,
                       company: Company = Depends(get_current_active_company),
@@ -85,10 +101,6 @@ async def get_request(request_id: int,
     logger.debug(f"{obj=}")
 
     return obj
-
-
-
-
 
 # @router.post("/{response_id}/clarify")
 # async def clarify_request(response_id: int,

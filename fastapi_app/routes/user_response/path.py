@@ -53,7 +53,6 @@ async def clarify_response(background_tasks: BackgroundTasks,
                                  status="received")
 
     obj = await user_requests_servise.save(db, obj_save)
-
     obj = await user_requests_servise.request_processing(db, obj)
 
     background_tasks.add_task(generate_response, db, obj)

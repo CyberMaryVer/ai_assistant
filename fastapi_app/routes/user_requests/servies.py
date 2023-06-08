@@ -12,7 +12,7 @@ from loguru import logger
 from starlette import status
 
 from fastapi_app.sql_tools import models
-from .schemas import UserRequest, UserRequestCreate, UserRequestUpdate, UserRequestDialog
+from .schemas import UserRequest, UserRequestCreate, UserRequestUpdate, UserRequestDialog, UserResponseDialog
 from ..api_routes import calling_assistant
 from ..content_filter.schemas import Filter
 from ..content_filter.servies import filter_servise
@@ -62,7 +62,7 @@ class UserRequestsService:
         filter = await self._fetchrow(db, query)
         return filter
 
-    async def get_by_company(self, db: asyncpg.Pool, _id: int, company_id: int) -> UserRequest:
+    async def get_by_company(self, db: asyncpg.Pool, _id: int, company_id: int) -> models.Responses:
         query = select(self.model).where(self.model.id == _id).where(self.model.company_id == company_id)
 
         filter = await self._fetchrow(db, query)
@@ -212,6 +212,52 @@ class UserRequestsService:
                                 detail=f"Запрос id={obj.id} был заблокирован фильтром id={filter.id}, описание фильтра: {filter.description}")
 
         return obj
+
+    async def get_resp_req(self, db: asyncpg.Pool, resp_id: int, company_id: int):
+        bot_response = await user_response_servise.get_by_company(db, resp_id, company_id)
+
+        user_request = await self.get_by_company(db, bot_response.request_id, company_id)
+        user_request_pyd = UserRequestDialog.from_orm(user_request)
+
+        user_request_pyd.response = UserResponseDialog.from_orm(bot_response)
+
+        if user_request_pyd.parent_resp_id:
+            resp_req = await self.get_resp_req(db, user_request_pyd.parent_resp_id, company_id)
+            resp_req.response.clarify = UserRequestDialog.from_orm(user_request)
+
+        return user_request_pyd
+
+    async def get_all_resp_req(self, db: asyncpg.Pool, resp_id: int, company_id: int) -> UserRequestDialog:
+        all_resp_req = None
+
+        while resp_id:
+            resp_req = await self.get_resp_req(db, resp_id, company_id)
+            resp_req.response.clarify = all_resp_req
+            all_resp_req = resp_req
+            resp_id = all_resp_req.parent_resp_id
+
+        return all_resp_req
+
+    async def insert_request_to_end(self, resp_req: UserRequestDialog, request: UserRequestDialog):
+        end_resp_req = resp_req.response.clarify
+        while end_resp_req.response.clarify:
+            end_resp_req = end_resp_req.response.clarify
+
+        end_resp_req.response.clarify = request
+        return resp_req
+
+    async def get_dialog(self, db: asyncpg.Pool, _id: int, company_id: int, ) -> UserRequestDialog:
+        user_request = await self.get_by_company(db, _id, company_id)
+
+        print(user_request)
+        if user_request.parent_resp_id:
+            resp_req = await self.get_all_resp_req(db, user_request.parent_resp_id, company_id)
+
+            resp_req = await self.insert_request_to_end(resp_req, UserRequestDialog.from_orm(user_request))
+
+            return resp_req
+
+        return user_request
 
 
 async def generate_response(db: asyncpg.Pool, obj: UserRequest):

@@ -3,8 +3,6 @@ from typing import Optional, Union
 
 from fastapi import Query
 from pydantic import BaseModel, conint
-from pydantic.fields import DeferredType
-from typing import ForwardRef
 
 status_list = {"successful": "Ответ подготовлен",
                "generate_error": "Ответ не удалось сформировать",
@@ -31,8 +29,6 @@ class UserResponse(UserResponseCreate):
         orm_mode = True
 
 
-
-
 class FeedbackBase(BaseModel):
     respons_id: int
     user_id: Union[str, None] = None
@@ -43,6 +39,7 @@ class FeedbackBase(BaseModel):
 class FeedbackIn(BaseModel):
     estimation: conint(ge=1, le=5)
     note: Union[str, None] = Query("Ответ был очень полезен", description="Вопрос пользователя")
+
 
 class FeedbackCreate(FeedbackBase):
     pass

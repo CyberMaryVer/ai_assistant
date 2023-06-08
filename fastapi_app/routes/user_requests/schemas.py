@@ -7,6 +7,7 @@ from pydantic.fields import DeferredType
 from typing import ForwardRef
 
 from fastapi_app.routes.keys.schemas import Key
+from fastapi_app.routes.user_response.schemas import UserResponse
 
 example = "как начисляется ндфл сотруднику работающему из другой страны?"
 
@@ -62,8 +63,21 @@ class UserRequestOut(BaseModel):
         orm_mode = True
 
 
+
+
+UserRequestRef = ForwardRef("UserResponseDialog")
 class UserRequestDialog(UserRequest):
-    response: Union[list[dict], None]
+    response: Union[UserRequestRef, None] = None
+
+class UserResponseDialog(UserResponse):
+    clarify: Union[UserRequestDialog, None] = None
+
+
+UserRequestDialog.update_forward_refs()
+
+
+
+
 
 # UserRequestRef = ForwardRef("UserRequestPerent")
 # class UserRequestPerent(UserRequest):
