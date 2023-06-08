@@ -7,7 +7,7 @@ from starlette import status
 from starlette.background import BackgroundTasks
 
 from ..user_requests.schemas import UserRequestBase, UserRequestCreate, UserRequestOut
-from ..user_requests.servies import generate_response, user_requests_servise
+from ..user_requests.servies import generate_clarify_response, user_requests_servise
 from ...core.db import get_db
 from .schemas import UserResponse, Feedback, FeedbackCreate, FeedbackIn
 from .servies import user_response_servise as servise
@@ -55,7 +55,7 @@ async def clarify_response(background_tasks: BackgroundTasks,
     obj = await user_requests_servise.save(db, obj_save)
     obj = await user_requests_servise.request_processing(db, obj)
 
-    background_tasks.add_task(generate_response, db, obj)
+    background_tasks.add_task(generate_clarify_response, db, obj)
 
     return obj
 

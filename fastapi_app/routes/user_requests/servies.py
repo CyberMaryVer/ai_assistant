@@ -239,7 +239,7 @@ class UserRequestsService:
         return all_resp_req
 
     async def insert_request_to_end(self, resp_req: UserRequestDialog, request: UserRequestDialog):
-        end_resp_req = resp_req.response.clarify
+        end_resp_req = resp_req
         while end_resp_req.response.clarify:
             end_resp_req = end_resp_req.response.clarify
 
@@ -266,7 +266,70 @@ async def generate_response(db: asyncpg.Pool, obj: UserRequest):
     # await sleep(30)
     try:
         bot_answer = await calling_assistant(obj.raw_text, obj.topic)
-    except Exception:
+    except Exception as err:
+        logger.warning(f"[generate_clarify_response] {err=}")
+        request_update = UserRequestUpdate(status="rate_limit")
+        await user_requests_servise.update(db, obj.id, request_update)
+        return False
+
+    logger.success(f"Получили ответ на вопрос {obj.id}, {bot_answer=}")
+
+    if bot_answer.get('answer'):
+        response = UserResponseCreate(raw_text=bot_answer.get('answer'),
+                                      sources=bot_answer.get('sources'),
+                                      request_id=obj.id,
+                                      status='successful'
+                                      )
+
+        await user_response_servise.save(db, response)
+
+        request_update = UserRequestUpdate(status="answered")
+
+        await user_requests_servise.update(db, obj.id, request_update)
+
+    else:
+        request_update = UserRequestUpdate(status="response_generation_error")
+        await user_requests_servise.update(db, obj.id, request_update)
+
+
+async def convert_dialog_to_promt(dialog: UserRequestDialog):
+    promt = ''
+    promt_first = "{question}\n Answer: {answer}\n"
+    promt_template = "Question: {question}\n Answer: {answer}\n"
+    promt_end = "Question: {question}\n"
+
+    head_request = dialog
+    while head_request.response is not None:
+        if not promt:
+            promt = promt_first.format(question=head_request.raw_text,
+                                       answer=head_request.response.raw_text
+                                       )
+        else:
+            promt += promt_template.format(question=head_request.raw_text,
+                                           answer=head_request.response.raw_text
+                                           )
+
+        head_request = head_request.response.clarify
+
+    else:
+        promt += promt_end.format(question=head_request.raw_text)
+
+    print(promt)
+
+    return promt
+
+
+async def generate_clarify_response(db: asyncpg.Pool, obj: UserRequest):
+    logger.info(f"Начали генерировать ответ на вопрос {obj.id}")
+    logger.debug(f"{obj=}")
+
+    dialog = await user_requests_servise.get_dialog(db, obj.id, obj.company_id)
+    promt_dialog = await convert_dialog_to_promt(dialog)
+
+    try:
+        bot_answer = await calling_assistant(promt_dialog, obj.topic)
+    except Exception as err:
+        logger.warning(f"[generate_clarify_response] {err=}")
         request_update = UserRequestUpdate(status="rate_limit")
         await user_requests_servise.update(db, obj.id, request_update)
         return False
