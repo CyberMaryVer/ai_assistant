@@ -11,9 +11,10 @@ from starlette import status
 from fastapi_app.utils.logger import setup_logging
 from fastapi_app.responses.api_responses import CHAT_RESPONSES, CHAT_RESPONSES_SIMPLE
 from fastapi_app.chatbot.assistant import get_answer_simple
-from fastapi_app.chatbot.custom_langchain import answer_with_openai, answer_with_openai_translated
+from fastapi_app.chatbot.custom_langchain import answer_with_openai, answer_with_openai_translated, \
+    format_answer_with_openai
 from fastapi_app.chatbot.second_chance import second_chance
-from fastapi_app.chatbot.update_sources import add_tk_sources
+from fastapi_app.chatbot.update_sources import enrich_sources as enrich_sources_func
 from fastapi_app.chatbot.fake_keys.validate_key import use_key
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "OPENAI_API_KEY")
@@ -37,7 +38,7 @@ class PrettyJSONResponse(Response):
 class QuestionParams(BaseModel):
     tada_key: str = Query('54321test', description="Tada key")
     topic: str = Query('business', example='tk', description="Choose topic: [business, tk, hr, yt]")
-    enrich_sources: bool = Query(False, description="Add links to sources (tk only)")
+    enrich_sources: bool = Query(True, description="Add links to sources (tk, yt only)")
 
 
 class QuestionParamsSimple(BaseModel):
@@ -62,9 +63,11 @@ def _get_valid_key(key):
         return None, key_status['error']
 
 
-def get_answer_with_sources(user_input, api_key, topic):
+def get_answer_with_sources(user_input, api_key, topic, translate_answer=False):
     if topic == 'yt':
-        answer, sources = answer_with_openai_translated(question=user_input, api_key=api_key, faiss_index=topic)
+        answer, sources = answer_with_openai_translated(question=user_input, api_key=api_key, faiss_index=topic,
+                                                        translate_answer=translate_answer)
+        answer = format_answer_with_openai(answer, api_key=api_key) if not translate_answer else answer
     else:
         answer, sources = answer_with_openai(question=user_input, api_key=api_key, faiss_index=topic)
     answer, sources = second_chance(answer, sources, user_input, api_key)
@@ -137,9 +140,7 @@ async def ask_assistant(
     start_time = time()
     answer, sources = get_answer_with_sources(user_input=user_input, api_key=api_key, topic=params.topic)
     elapsed_time = time() - start_time
-
-    if params.enrich_sources and params.topic == 'tk':
-        sources = add_tk_sources(sources)
+    sources = enrich_sources_func(sources, params.topic)
 
     response_content = {"answer": answer, "sources": sources, "user_request": config, "uses_left": uses_left,
                         "elapsed_time": elapsed_time}
@@ -157,9 +158,7 @@ async def calling_assistant(user_input: str, topic: str = "default", enrich_sour
 
     answer, sources = answer_with_openai(question=user_input, api_key=api_key, faiss_index=topic)
     answer, sources = second_chance(answer, sources, user_input, api_key)
-
-    if enrich_sources and topic == 'tk':
-        sources = add_tk_sources(sources)
+    sources = enrich_sources_func(sources, topic) if enrich_sources else sources
 
     response_content = {"answer": answer, "sources": sources}
     logger.info(f"response: {response_content}, {uses_left=}")

@@ -24,8 +24,6 @@ SECOND_CHANCE_SOURCE = "https://www.google.com/"
 
 
 def second_chance(answer, sources, user_input, api_key):
-    print("\033[095msecond chance:\033[0m", answer)
-
     is_answer_not_ok = [x in answer.lower() for x in NOT_OK_ANSWERS]
 
     if any(is_answer_not_ok):
@@ -34,6 +32,7 @@ def second_chance(answer, sources, user_input, api_key):
             second_answer = get_answer_simple(question=user_input, prompt=prompt, api_key=api_key)
             second_answer = SECOND_CHANCE_PREFIX + second_answer["answer"]
             sources = sources + [SECOND_CHANCE_SOURCE, ]
+            print("\033[095msecond chance:\033[0m", second_answer)
             return second_answer, sources
 
         except Exception as e:
@@ -41,4 +40,5 @@ def second_chance(answer, sources, user_input, api_key):
             return answer, sources
 
     else:
+        print("\033[095manswer is ok:\033[0m", answer)
         return answer, sources
